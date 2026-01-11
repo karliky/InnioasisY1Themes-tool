@@ -19,8 +19,6 @@ Live app: https://karliky.github.io/InnioasisY1Themes-tool/
 
 - `App.tsx`, `components/`, `services/` - UI and editor logic
 - `themes/` - theme folders and assets used by the editor
-- `docs/` - device/theme reference material and schema
-- `vite.config.ts` - build configuration for local dev + GitHub Pages
 
 ## Getting started
 
@@ -28,7 +26,6 @@ Live app: https://karliky.github.io/InnioasisY1Themes-tool/
 
 1. Install dependencies:
    `yarn install`
-2. (Optional) Enable AI generation by setting `GEMINI_API_KEY` in `.env.local`.
 3. Run the dev server:
    `yarn dev`
 

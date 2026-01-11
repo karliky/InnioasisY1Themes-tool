@@ -1,0 +1,185 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Y1 Theme Config",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "themeCover": {"$ref": "#/definitions/path"},
+    "desktopWallpaper": {"$ref": "#/definitions/path"},
+    "globalWallpaper": {"$ref": "#/definitions/path"},
+    "desktopMask": {"$ref": "#/definitions/path"},
+    "fontFamily": {"$ref": "#/definitions/path"},
+    "itemConfig": {"$ref": "#/definitions/itemConfig"},
+    "dialogConfig": {"$ref": "#/definitions/dialogConfig"},
+    "menuConfig": {"$ref": "#/definitions/menuConfig"},
+    "homePageConfig": {"$ref": "#/definitions/homePageConfig"},
+    "fileConfig": {"$ref": "#/definitions/fileConfig"},
+    "settingConfig": {"$ref": "#/definitions/settingConfig"},
+    "statusConfig": {"$ref": "#/definitions/statusConfig"},
+    "playerConfig": {"$ref": "#/definitions/playerConfig"}
+  },
+  "definitions": {
+    "path": {
+      "type": "string",
+      "description": "Relative file path under the theme folder (empty string allowed)"
+    },
+    "color": {
+      "type": "string",
+      "description": "#RRGGBB or #AARRGGBB (empty string allowed)",
+      "pattern": "^(#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8}))?$"
+    },
+    "itemConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "itemTextColor": {"$ref": "#/definitions/color"},
+        "itemSelectedTextColor": {"$ref": "#/definitions/color"},
+        "itemBackground": {"$ref": "#/definitions/path"},
+        "itemSelectedBackground": {"$ref": "#/definitions/path"},
+        "itemRightArrow": {"$ref": "#/definitions/path"}
+      }
+    },
+    "dialogConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dialogOptionBackground": {"$ref": "#/definitions/path"},
+        "dialogOptionTextColor": {"$ref": "#/definitions/color"},
+        "dialogOptionSelectedBackground": {"$ref": "#/definitions/path"},
+        "dialogOptionSelectedTextColor": {"$ref": "#/definitions/color"},
+        "dialogBackgroundColor": {"$ref": "#/definitions/color"},
+        "dialogTextColor": {"$ref": "#/definitions/color"}
+      }
+    },
+    "menuConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "menuBackgroundColor": {"$ref": "#/definitions/color"},
+        "menuItemBackground": {"$ref": "#/definitions/path"},
+        "menuItemTextColor": {"$ref": "#/definitions/color"},
+        "menuItemSelectedBackground": {"$ref": "#/definitions/path"},
+        "menuItemSelectedTextColor": {"$ref": "#/definitions/color"}
+      }
+    },
+    "homePageConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "nowPlaying": {"$ref": "#/definitions/path"},
+        "music": {"$ref": "#/definitions/path"},
+        "video": {"$ref": "#/definitions/path"},
+        "audiobooks": {"$ref": "#/definitions/path"},
+        "photos": {"$ref": "#/definitions/path"},
+        "fm": {"$ref": "#/definitions/path"},
+        "bluetooth": {"$ref": "#/definitions/path"},
+        "settings": {"$ref": "#/definitions/path"},
+        "shuffleQuick": {"$ref": "#/definitions/path"},
+        "ebook": {"$ref": "#/definitions/path"},
+        "calculator": {"$ref": "#/definitions/path"},
+        "calendar": {"$ref": "#/definitions/path"}
+      }
+    },
+    "fileConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "folderIcon": {"$ref": "#/definitions/path"},
+        "musicIcon": {"$ref": "#/definitions/path"}
+      }
+    },
+    "settingConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "settingMask": {"$ref": "#/definitions/path"},
+        "shutdown": {"$ref": "#/definitions/path"},
+        "timedShutdown_off": {"$ref": "#/definitions/path"},
+        "timedShutdown_10": {"$ref": "#/definitions/path"},
+        "timedShutdown_20": {"$ref": "#/definitions/path"},
+        "timedShutdown_30": {"$ref": "#/definitions/path"},
+        "timedShutdown_60": {"$ref": "#/definitions/path"},
+        "timedShutdown_90": {"$ref": "#/definitions/path"},
+        "timedShutdown_120": {"$ref": "#/definitions/path"},
+        "shuffleOn": {"$ref": "#/definitions/path"},
+        "shuffleOff": {"$ref": "#/definitions/path"},
+        "repeatOff": {"$ref": "#/definitions/path"},
+        "repeatAll": {"$ref": "#/definitions/path"},
+        "repeatOne": {"$ref": "#/definitions/path"},
+        "equalizer_normal": {"$ref": "#/definitions/path"},
+        "equalizer_classical": {"$ref": "#/definitions/path"},
+        "equalizer_dance": {"$ref": "#/definitions/path"},
+        "equalizer_flat": {"$ref": "#/definitions/path"},
+        "equalizer_folk": {"$ref": "#/definitions/path"},
+        "equalizer_heavymetal": {"$ref": "#/definitions/path"},
+        "equalizer_hiphop": {"$ref": "#/definitions/path"},
+        "equalizer_jazz": {"$ref": "#/definitions/path"},
+        "equalizer_pop": {"$ref": "#/definitions/path"},
+        "equalizer_rock": {"$ref": "#/definitions/path"},
+        "keyLockOn": {"$ref": "#/definitions/path"},
+        "keyLockOff": {"$ref": "#/definitions/path"},
+        "keyToneOn": {"$ref": "#/definitions/path"},
+        "keyToneOff": {"$ref": "#/definitions/path"},
+        "keyVibrationOn": {"$ref": "#/definitions/path"},
+        "keyVibrationOff": {"$ref": "#/definitions/path"},
+        "wallpaper": {"$ref": "#/definitions/path"},
+        "backlight_10": {"$ref": "#/definitions/path"},
+        "backlight_15": {"$ref": "#/definitions/path"},
+        "backlight_30": {"$ref": "#/definitions/path"},
+        "backlight_45": {"$ref": "#/definitions/path"},
+        "backlight_60": {"$ref": "#/definitions/path"},
+        "backlight_120": {"$ref": "#/definitions/path"},
+        "backlight_300": {"$ref": "#/definitions/path"},
+        "backlight_always": {"$ref": "#/definitions/path"},
+        "brightness": {"$ref": "#/definitions/path"},
+        "displayBatteryOn": {"$ref": "#/definitions/path"},
+        "displayBatteryOff": {"$ref": "#/definitions/path"},
+        "dateTime": {"$ref": "#/definitions/path"},
+        "language": {"$ref": "#/definitions/path"},
+        "launcher": {"$ref": "#/definitions/path"},
+        "factoryReset": {"$ref": "#/definitions/path"},
+        "clearCache": {"$ref": "#/definitions/path"},
+        "theme": {"$ref": "#/definitions/path"},
+        "fileExtensionOn": {"$ref": "#/definitions/path"},
+        "fileExtensionOff": {"$ref": "#/definitions/path"}
+      }
+    },
+    "statusConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "playing": {"$ref": "#/definitions/path"},
+        "audiobookPlaying": {"$ref": "#/definitions/path"},
+        "pause": {"$ref": "#/definitions/path"},
+        "fmPlaying": {"$ref": "#/definitions/path"},
+        "stop": {"$ref": "#/definitions/path"},
+        "blConnected": {"$ref": "#/definitions/path"},
+        "blConnecting": {"$ref": "#/definitions/path"},
+        "blDisconnected": {"$ref": "#/definitions/path"},
+        "headsetWithMic": {"$ref": "#/definitions/path"},
+        "headsetWithoutMic": {"$ref": "#/definitions/path"},
+        "statusBarColor": {"$ref": "#/definitions/color"},
+        "battery": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/path"},
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "batteryCharging": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/path"},
+          "minItems": 4,
+          "maxItems": 4
+        }
+      }
+    },
+    "playerConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "progressColor": {"$ref": "#/definitions/color"},
+        "progressBackgroundColor": {"$ref": "#/definitions/color"}
+      }
+    }
+  }
+}

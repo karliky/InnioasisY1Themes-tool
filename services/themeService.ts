@@ -3,6 +3,11 @@ import { indexedDBService, ClonedThemeData, IndexedDBError } from './indexedDBSe
 
 // Descriptions for config keys from the manifest
 const CONFIG_DESCRIPTIONS: Record<string, string> = {
+  // Theme metadata
+  'theme_info.title': 'Theme display name',
+  'theme_info.author': 'Theme creator\'s name',
+  'theme_info.authorUrl': 'Author\'s website or profile URL',
+  'theme_info.description': 'Theme description/purpose',
   // Top level
   'themeCover': 'Theme preview image used in theme list',
   'desktopWallpaper': 'Desktop wallpaper',
@@ -387,4 +392,149 @@ export const deleteClonedTheme = async (themeId: string): Promise<void> => {
 export const getInitialTheme = (): LoadedTheme | null => {
   const themes = loadAvailableThemes();
   return themes.length ? themes[0] : null;
+};
+
+// Import a theme from a .zip file
+export const importThemeFromZip = async (zipFile: File): Promise<LoadedTheme> => {
+  try {
+    const JSZip = (await import('jszip')).default;
+    const zip = new JSZip();
+    const zipContent = await zip.loadAsync(zipFile);
+
+    // Look for config.json at the root or in a subdirectory
+    let configFile = zipContent.file('config.json');
+    let configPath = 'config.json';
+    
+    if (!configFile) {
+      // Try to find it in subdirectories
+      const files = Object.keys(zipContent.files);
+      const configMatch = files.find(f => f.endsWith('/config.json') && f.split('/').length === 2);
+      if (configMatch) {
+        configFile = zipContent.file(configMatch);
+        configPath = configMatch;
+      }
+    }
+
+    if (!configFile) {
+      throw new Error('No config.json found in the .zip file');
+    }
+
+    const configText = await configFile.async('string');
+    const spec = JSON.parse(configText);
+
+    if (!spec) {
+      throw new Error('Invalid config.json format');
+    }
+
+    // Extract theme info for ID
+    const themeName = spec.theme_info?.title || zipFile.name.replace('.zip', '');
+    // Generate a short unique ID using hash of timestamp
+    const shortHash = Math.random().toString(36).substring(2, 8);
+    const clonedId = `imported_${shortHash}`;
+
+    // Build asset overrides by loading all referenced files from the zip
+    const assetOverrides: Record<string, string> = {};
+    const referencedFiles = extractReferencedFiles(spec);
+    
+    const baseDir = configPath.split('/')[0] === 'config.json' ? '' : configPath.split('/')[0];
+    
+    for (const [fileName] of referencedFiles.entries()) {
+      // Try to find the file in the zip
+      let fileToLoad: any = null;
+      
+      // Try direct path first
+      fileToLoad = zipContent.file(fileName);
+      
+      // Try with base directory
+      if (!fileToLoad && baseDir) {
+        fileToLoad = zipContent.file(`${baseDir}/${fileName}`);
+      }
+      
+      // Try searching in all subdirectories
+      if (!fileToLoad) {
+        const allFiles = Object.keys(zipContent.files);
+        const match = allFiles.find(f => f.endsWith(`/${fileName}`) || f.endsWith(fileName));
+        if (match) {
+          fileToLoad = zipContent.file(match);
+        }
+      }
+      
+      if (fileToLoad && !fileToLoad.dir) {
+        try {
+          const blob = await fileToLoad.async('blob');
+          const dataUrl = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(typeof reader.result === 'string' ? reader.result : '');
+            reader.onerror = () => reject(new Error(`Failed to read ${fileName}`));
+            reader.readAsDataURL(blob);
+          });
+          assetOverrides[fileName] = dataUrl;
+        } catch (error) {
+          console.warn(`Failed to load asset ${fileName}:`, error);
+        }
+      }
+    }
+
+    // Get the loaded assets from referenced files
+    const loadedAssets: ThemeAssetInfo[] = [];
+    for (const [fileName, configKey] of referencedFiles.entries()) {
+      const url = assetOverrides[fileName];
+      if (url) {
+        loadedAssets.push({
+          fileName,
+          url,
+          configKey,
+          description: CONFIG_DESCRIPTIONS[configKey] || configKey
+        });
+      }
+    }
+
+    loadedAssets.sort((a, b) => (a.configKey || '').localeCompare(b.configKey || ''));
+
+    // Save to IndexedDB
+    try {
+      await indexedDBService.saveTheme({
+        id: clonedId,
+        spec,
+        loadedAssets,
+        assetOverrides,
+        clonedDate: new Date().toISOString()
+      });
+    } catch (error) {
+      if (error instanceof IndexedDBError) {
+        throw error;
+      }
+      console.error('Error saving imported theme:', error);
+      throw new Error('Failed to save imported theme');
+    }
+
+    // Create the theme object
+    const assetUrlForFile = (fileName: string): string | undefined => {
+      return assetOverrides[fileName];
+    };
+
+    const assetUrlForId = (imageId: string): string | undefined => {
+      const entry = spec.assets?.images?.find((img: any) => img.id === imageId);
+      if (!entry) return undefined;
+      return assetUrlForFile(entry.file);
+    };
+
+    return {
+      id: clonedId,
+      spec,
+      assetUrlForId,
+      assetUrlForFile,
+      loadedAssets,
+      isEditable: true,
+      clonedDate: new Date().toISOString()
+    };
+  } catch (error) {
+    if (error instanceof IndexedDBError) {
+      throw error;
+    }
+    console.error('Error importing theme from zip:', error);
+    throw error instanceof Error 
+      ? error 
+      : new Error('Failed to import theme from .zip file');
+  }
 };

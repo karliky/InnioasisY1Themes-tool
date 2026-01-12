@@ -4,6 +4,7 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "theme_info": {"$ref": "#/definitions/theme_info"},
     "themeCover": {"$ref": "#/definitions/path"},
     "desktopWallpaper": {"$ref": "#/definitions/path"},
     "globalWallpaper": {"$ref": "#/definitions/path"},
@@ -27,6 +28,28 @@
       "type": "string",
       "description": "#RRGGBB or #AARRGGBB (empty string allowed)",
       "pattern": "^(#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8}))?$"
+    },
+    "theme_info": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Theme display name"
+        },
+        "author": {
+          "type": "string",
+          "description": "Theme creator's name"
+        },
+        "authorUrl": {
+          "type": "string",
+          "description": "Author's website or profile URL"
+        },
+        "description": {
+          "type": "string",
+          "description": "Theme description/purpose"
+        }
+      }
     },
     "itemConfig": {
       "type": "object",

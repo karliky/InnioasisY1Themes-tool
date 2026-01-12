@@ -8,6 +8,9 @@ import { LoadedTheme } from '../types';
 function convertToY1Config(spec: any): any {
   const config: any = {};
   
+  // Include theme metadata if present
+  if (spec.theme_info) config.theme_info = { ...spec.theme_info };
+  
   // Extract top-level properties that map directly
   if (spec.themeCover) config.themeCover = spec.themeCover;
   if (spec.desktopWallpaper) config.desktopWallpaper = spec.desktopWallpaper;

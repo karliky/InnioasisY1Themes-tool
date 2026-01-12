@@ -1434,7 +1434,7 @@ const ThemeDisplay: React.FC<ThemeDisplayProps> = ({
                     whiteSpace: 'nowrap',
                     maxWidth: '100%',
                     textShadow: '0 1px 2px rgba(0,0,0,0.5)',
-                    backgroundColor: 'rgba(255,255,255,0.16)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
                     padding: '4px 6px',
                     borderRadius: 4,
                     display: 'inline-block'
@@ -1454,7 +1454,7 @@ const ThemeDisplay: React.FC<ThemeDisplayProps> = ({
                     maxWidth: '100%',
                     opacity: 0.9,
                     textShadow: '0 1px 2px rgba(0,0,0,0.5)',
-                    backgroundColor: 'rgba(255,255,255,0.16)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
                     padding: '4px 6px',
                     borderRadius: 4,
                     display: 'inline-block'
@@ -1475,7 +1475,7 @@ const ThemeDisplay: React.FC<ThemeDisplayProps> = ({
                     opacity: 0.85,
                     marginTop: 4,
                     textShadow: '0 1px 2px rgba(0,0,0,0.5)',
-                    backgroundColor: 'rgba(255,255,255,0.16)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
                     padding: '4px 6px',
                     borderRadius: 4,
                     display: 'inline-block'
@@ -1492,7 +1492,7 @@ const ThemeDisplay: React.FC<ThemeDisplayProps> = ({
                     opacity: 0.8,
                     marginTop: 12,
                     textShadow: '0 1px 2px rgba(0,0,0,0.5)',
-                    backgroundColor: 'rgba(255,255,255,0.16)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
                     padding: '4px 6px',
                     borderRadius: 4,
                     display: 'inline-block'
@@ -1537,7 +1537,7 @@ const ThemeDisplay: React.FC<ThemeDisplayProps> = ({
               position: 'relative',
               width: '100%',
               height: 2,
-              backgroundColor: playerConfig.progressBackgroundColor || 'rgba(255, 255, 255, 0.2)',
+              backgroundColor: playerConfig.progressBackgroundColor || '#ffca71',
               borderRadius: 1,
               marginBottom: 8
             }}>
@@ -1548,7 +1548,7 @@ const ThemeDisplay: React.FC<ThemeDisplayProps> = ({
                 top: 0,
                 width: `${playbackProgress * 100}%`,
                 height: '100%',
-                backgroundColor: playerConfig.progressColor || colors.text_primary || '#ffffff',
+                backgroundColor: playerConfig.progressColor || '#2bb7ff',
                 borderRadius: 1,
                 transition: 'width 0.3s ease'
               }} />
@@ -1561,7 +1561,7 @@ const ThemeDisplay: React.FC<ThemeDisplayProps> = ({
                 width: 8,
                 height: 8,
                 borderRadius: '50%',
-                backgroundColor: playerConfig.progressColor || colors.text_primary || '#ffffff',
+                backgroundColor: playerConfig.progressColor || '#2bb7ff',
                 border: '1px solid rgba(0,0,0,0.3)',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
               }} />
@@ -1573,13 +1573,13 @@ const ThemeDisplay: React.FC<ThemeDisplayProps> = ({
               justifyContent: 'space-between',
               alignItems: 'center',
               width: '100%',
-              color: playerConfig.progressTextColor || colors.text_primary,
+              color: '#ffffff',
               fontSize: 16,
               fontWeight: 600,
               opacity: 0.9
             }}>
               {/* Elapsed Time */}
-              <span style={{ backgroundColor: 'rgba(255,255,255,0.16)', padding: '4px 6px', borderRadius: 4, display: 'inline-block' }}>
+              <span style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '4px 6px', borderRadius: 4, display: 'inline-block' }}>
                 {(() => {
                   const minutes = Math.floor(elapsedTime / 60);
                   const seconds = Math.floor(elapsedTime % 60);
@@ -1588,7 +1588,7 @@ const ThemeDisplay: React.FC<ThemeDisplayProps> = ({
               </span>
 
               {/* Total Duration */}
-              <span style={{ backgroundColor: 'rgba(255,255,255,0.16)', padding: '4px 6px', borderRadius: 4, display: 'inline-block' }}>
+              <span style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '4px 6px', borderRadius: 4, display: 'inline-block' }}>
                 {currentSong ? (() => {
                   const minutes = Math.floor(currentSong.duration / 60);
                   const seconds = Math.floor(currentSong.duration % 60);

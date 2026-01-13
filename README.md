@@ -6,7 +6,7 @@
 
 A visual editor and simulator for creating Innioasis Y1 themes. Build a theme, preview it instantly, and export assets with a clean, predictable structure that matches the device's expectations.
 
-Live app: https://karliky.github.io/InnioasisY1Themes-tool/
+Live app: https://y1-themes.vercel.app/
 
 ## What this app does
 

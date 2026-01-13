@@ -464,19 +464,48 @@ const GalleryPage: React.FC = () => {
 
             {/* Header */}
             <header className="bio-hero">
-                <h1>Theme Ecosystem</h1>
-                <p>
-                    A community-cultivated ecosystem of Innioasis Y1 themes. Explore the digital art and download unique themes for your MP3 device.
+                <h1 style={{ marginBottom: '1rem' }}>Innioasis Y1 Gallery</h1>
+                <p style={{ fontSize: '1.1rem', color: '#ccc', maxWidth: '600px', margin: '0 auto 2rem auto', lineHeight: '1.6' }}>
+                    Discover custom themes created by the community, or <strong style={{ color: '#fff' }}>submit your own!</strong><br />
+                    <span style={{ color: '#fff', opacity: 0.9 }}>Click any card</span> to preview it on the device simulator before downloading.
                 </p>
 
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '2rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginTop: '1rem', flexWrap: 'wrap' }}>
                     <a href="https://discord.gg/3zbfaTNN7V" target="_blank" rel="noreferrer"
-                        style={{ color: '#00aaff', textDecoration: 'none', borderBottom: '1px dotted #00aaff' }}>
-                        Timmkoo Discord
+                        style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                            padding: '0.8rem 1.5rem',
+                            background: 'rgba(0, 170, 255, 0.1)',
+                            border: '1px solid rgba(0, 170, 255, 0.3)',
+                            borderRadius: '30px',
+                            color: '#00aaff',
+                            textDecoration: 'none',
+                            fontSize: '0.9rem',
+                            fontWeight: 500,
+                            cursor: 'pointer'
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.background = 'rgba(0, 170, 255, 0.2)'}
+                        onMouseOut={(e) => e.currentTarget.style.background = 'rgba(0, 170, 255, 0.1)'}
+                    >
+                        Join Discord Community
                     </a>
                     <a href="https://github.com/karliky/InnioasisY1Themes-tool" target="_blank" rel="noreferrer"
-                        style={{ color: '#aaa', textDecoration: 'none', borderBottom: '1px dotted #aaa' }}>
-                        Source DNA
+                        style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                            padding: '0.8rem 1.5rem',
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            borderRadius: '30px',
+                            color: '#ccc',
+                            textDecoration: 'none',
+                            fontSize: '0.9rem',
+                            fontWeight: 500,
+                            cursor: 'pointer'
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
+                        onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'}
+                    >
+                        Contribute on GitHub
                     </a>
                 </div>
             </header>

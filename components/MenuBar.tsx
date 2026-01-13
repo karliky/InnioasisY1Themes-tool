@@ -216,6 +216,12 @@ const MenuBar: React.FC<MenuBarProps> = ({
         </div>
       </div>
 
+      {/* CENTER NAVIGATION */}
+      <div className="menubar-center">
+        <div className="nav-pill active">Editor</div>
+        <button className="nav-pill" onClick={() => navigate('/gallery')}>Gallery</button>
+      </div>
+
       {/* RIGHT SIDE */}
       <div className="menubar-right">
         <SearchPalette

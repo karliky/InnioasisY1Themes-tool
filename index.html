@@ -1,6 +1,6 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +8,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Basier+Circle:wght@400;500;600&display=swap" rel="stylesheet">
   <!-- Favicons & PWA manifest -->
-  <link rel="icon" href="/res/favicon/favicon.ico" sizes="any">
+  <link rel="icon" href="favicon.ico" sizes="any">
   <meta name="theme-color" content="#ffffff">
   <style>
     /* Editorial typography stack */
@@ -16,7 +16,7 @@
       --font-editorial: Georgia, 'Times New Roman', Times, serif;
       --font-body: 'Basier Circle', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       --font-mono: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-      
+
       /* Mature color palette - inspired by nature, analog photography, classic brands */
       --color-terracotta: #C97D60;
       --color-terracotta-dark: #B85D3A;
@@ -35,11 +35,11 @@
       --color-text-primary: #E8E3D5;
       --color-text-secondary: #D4A574;
       --color-text-muted: #8A8578;
-      
+
       /* Subtle texture overlay */
       --texture-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
     }
-    
+
     body {
       font-family: var(--font-body);
       background-color: var(--color-charcoal);
@@ -51,65 +51,90 @@
       /* Subtle texture overlay */
       background-image: var(--texture-noise);
     }
+
     html {
       width: 100vw;
       height: 100vh;
     }
+
     #root {
       width: 100%;
       height: 100%;
     }
+
     .device-shadow {
       box-shadow: 0 50px 100px -20px rgba(0, 255, 0, 0.1), 0 30px 60px -30px rgba(0, 0, 0, 0.8);
     }
+
     .click-wheel-surface {
       background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%);
     }
+
     .lcd-screen {
       background: #000;
       box-shadow: inset 0 0 20px rgba(0, 255, 0, 0.2);
       position: relative;
     }
+
     /* CRT Scanline Effect */
     .lcd-screen::after {
       content: " ";
       display: block;
       position: absolute;
-      top: 0; left: 0; bottom: 0; right: 0;
-      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                  linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
       z-index: 50;
       background-size: 100% 4px, 3px 100%;
       pointer-events: none;
     }
+
     /* Matrix Rain Animation for Backgrounds */
     @keyframes matrix-rain {
-      0% { background-position: 0% 0%; }
-      100% { background-position: 0% 1000%; }
+      0% {
+        background-position: 0% 0%;
+      }
+
+      100% {
+        background-position: 0% 1000%;
+      }
     }
+
     .matrix-bg {
-      background: linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.9)), 
-                  url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+      background: linear-gradient(rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.9)),
+        url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
       position: relative;
     }
+
     .matrix-text {
       color: #00FF00;
       text-shadow: 0 0 5px #00FF00;
     }
+
     .matrix-selected {
       color: #FFF044 !important;
       text-shadow: 0 0 8px #FFF044;
     }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
     /* Editorial sidebar styles */
     .editorial-sidebar {
       background: var(--color-bg-primary);
       border-right: 2px solid var(--color-warm-gray-dark);
       position: relative;
     }
-    
+
     .editorial-sidebar::before {
       content: '';
       position: absolute;
@@ -118,20 +143,20 @@
       opacity: 0.15;
       pointer-events: none;
     }
-    
+
     /* Hard shadows, not soft */
     .editorial-card {
       box-shadow: 2px 2px 0 0 var(--color-warm-gray-dark),
-                  4px 4px 0 0 var(--color-warm-gray);
+        4px 4px 0 0 var(--color-warm-gray);
       border: 1px solid var(--color-warm-gray);
     }
-    
+
     /* Asymmetric, intentional spacing */
     .editorial-section {
       margin-left: 0;
       margin-right: 12px;
     }
-    
+
     /* Custom range input styling - editorial dark theme */
     input[type="range"] {
       -webkit-appearance: none;
@@ -144,25 +169,25 @@
       margin: 0;
       padding: 0;
     }
-    
+
     /* Track styling - WebKit */
     input[type="range"]::-webkit-slider-track {
       background: #4A4540;
       height: 6px;
       border: 1px solid #3A3530;
-      box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3);
+      box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.3);
       margin-top: 7px;
       margin-bottom: 7px;
     }
-    
+
     /* Track styling - Firefox */
     input[type="range"]::-moz-range-track {
       background: #4A4540;
       height: 6px;
       border: 1px solid #3A3530;
-      box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3);
+      box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.3);
     }
-    
+
     /* Thumb styling - WebKit */
     /* Track center: 7px (top) + 3px (half of 6px) = 10px */
     /* Thumb: 18px height, center at 9px from top */
@@ -177,18 +202,18 @@
       width: 18px;
       border: 2px solid #3A3530;
       cursor: pointer;
-      box-shadow: 2px 2px 0 0 #1A1612, inset 1px 1px 2px rgba(255,255,255,0.1);
+      box-shadow: 2px 2px 0 0 #1A1612, inset 1px 1px 2px rgba(255, 255, 255, 0.1);
       margin-top: -7px;
       transition: background 0.2s ease;
     }
-    
+
     /* Alternative: try different margin values if -6px doesn't work */
     /* The thumb should be visually centered with the track */
-    
+
     input[type="range"]::-webkit-slider-thumb:hover {
       background: #B85D3A;
     }
-    
+
     /* Thumb styling - Firefox */
     input[type="range"]::-moz-range-thumb {
       background: #C97D60;
@@ -196,27 +221,27 @@
       width: 18px;
       border: 2px solid #3A3530;
       cursor: pointer;
-      box-shadow: 2px 2px 0 0 #1A1612, inset 1px 1px 2px rgba(255,255,255,0.1);
+      box-shadow: 2px 2px 0 0 #1A1612, inset 1px 1px 2px rgba(255, 255, 255, 0.1);
       transition: background 0.2s ease;
     }
-    
+
     input[type="range"]::-moz-range-thumb:hover {
       background: #B85D3A;
     }
-    
+
     /* Remove default focus outline and add custom */
     input[type="range"]:focus {
       outline: none;
     }
-    
+
     input[type="range"]:focus::-webkit-slider-thumb {
-      box-shadow: 2px 2px 0 0 #1A1612, inset 1px 1px 2px rgba(255,255,255,0.1), 0 0 0 3px rgba(201, 125, 96, 0.3);
+      box-shadow: 2px 2px 0 0 #1A1612, inset 1px 1px 2px rgba(255, 255, 255, 0.1), 0 0 0 3px rgba(201, 125, 96, 0.3);
     }
-    
+
     input[type="range"]:focus::-moz-range-thumb {
-      box-shadow: 2px 2px 0 0 #1A1612, inset 1px 1px 2px rgba(255,255,255,0.1), 0 0 0 3px rgba(201, 125, 96, 0.3);
+      box-shadow: 2px 2px 0 0 #1A1612, inset 1px 1px 2px rgba(255, 255, 255, 0.1), 0 0 0 3px rgba(201, 125, 96, 0.3);
     }
-    
+
     /* Custom select styling - editorial dark theme */
     select {
       -webkit-appearance: none;
@@ -228,11 +253,11 @@
       background-size: 12px 8px;
       padding-right: 36px !important;
     }
-    
+
     select::-ms-expand {
       display: none;
     }
-    
+
     /* Custom checkbox styling - editorial dark theme */
     input[type="checkbox"] {
       -webkit-appearance: none;
@@ -243,22 +268,22 @@
       background: #2F2A25;
       cursor: pointer;
       position: relative;
-      box-shadow: 2px 2px 0 0 #1A1612, inset 1px 1px 2px rgba(0,0,0,0.3);
+      box-shadow: 2px 2px 0 0 #1A1612, inset 1px 1px 2px rgba(0, 0, 0, 0.3);
       transition: all 0.2s ease;
       flex-shrink: 0;
     }
-    
+
     input[type="checkbox"]:hover {
       border-color: #6B7A47;
       background: #3A342F;
     }
-    
+
     input[type="checkbox"]:checked {
       background: #6B7A47;
       border-color: #6B7A47;
-      box-shadow: 2px 2px 0 0 #4A5A2F, inset 1px 1px 2px rgba(0,0,0,0.3);
+      box-shadow: 2px 2px 0 0 #4A5A2F, inset 1px 1px 2px rgba(0, 0, 0, 0.3);
     }
-    
+
     input[type="checkbox"]:checked::after {
       content: '';
       position: absolute;
@@ -269,19 +294,19 @@
       height: 10px;
       border: solid #E8E3D5;
       border-width: 0 2px 2px 0;
-      box-shadow: 0 1px 1px rgba(0,0,0,0.3);
+      box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
     }
-    
+
     input[type="checkbox"]:focus {
       outline: none;
-      box-shadow: 2px 2px 0 0 #1A1612, inset 1px 1px 2px rgba(0,0,0,0.3), 0 0 0 3px rgba(107, 122, 71, 0.3);
+      box-shadow: 2px 2px 0 0 #1A1612, inset 1px 1px 2px rgba(0, 0, 0, 0.3), 0 0 0 3px rgba(107, 122, 71, 0.3);
     }
-    
+
     input[type="checkbox"]:checked:focus {
-      box-shadow: 2px 2px 0 0 #4A5A2F, inset 1px 1px 2px rgba(0,0,0,0.3), 0 0 0 3px rgba(107, 122, 71, 0.3);
+      box-shadow: 2px 2px 0 0 #4A5A2F, inset 1px 1px 2px rgba(0, 0, 0, 0.3), 0 0 0 3px rgba(107, 122, 71, 0.3);
     }
   </style>
-<script type="importmap">
+  <script type="importmap">
 {
   "imports": {
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
@@ -291,10 +316,11 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
 </head>
+
 <body>
   <div id="root"></div>
-<script type="module" src="/index.tsx"></script>
+  <script type="module" src="./index.tsx"></script>
 </body>
+
 </html>

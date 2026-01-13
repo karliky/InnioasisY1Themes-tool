@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { LoadedTheme, ThemeAssetInfo } from '../types';
 import SearchPalette from './SearchPalette';
 import '../styles/MenuBar.css';
@@ -52,6 +53,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
   onShowPreferences,
   onSearchAssetSelect,
 }) => {
+  const navigate = useNavigate();
   const [activeMenu, setActiveMenu] = useState<MenuType | null>(null);
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
@@ -105,6 +107,10 @@ const MenuBar: React.FC<MenuBarProps> = ({
               </button>
               <button className="menu-option" onClick={() => { onOpenTheme(); closeMenu(); }}>
                 Open Theme...
+              </button>
+              <div className="menu-divider" />
+              <button className="menu-option" onClick={() => { navigate('/gallery'); closeMenu(); }}>
+                Theme Gallery
               </button>
               <div className="menu-divider" />
               <button
@@ -180,11 +186,11 @@ const MenuBar: React.FC<MenuBarProps> = ({
           </button>
           {activeMenu === 'help' && (
             <div className="menu-dropdown">
-              <a 
-                href="https://github.com/karliky/InnioasisY1Themes-tool/blob/main/README.md" 
-                target="_blank" 
+              <a
+                href="https://github.com/karliky/InnioasisY1Themes-tool/blob/main/README.md"
+                target="_blank"
                 rel="noopener noreferrer"
-                className="menu-option" 
+                className="menu-option"
                 onClick={() => { closeMenu(); }}
               >
                 Documentation
@@ -231,7 +237,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
                 <h3 className="text-xl font-bold text-[#FFFFFF]" style={{ fontFamily: 'var(--font-body)' }}>About Theme Maker Y1</h3>
                 <p className="text-[10px] text-[#888888] mt-1" style={{ fontFamily: 'var(--font-mono)' }}>Theme editor for Innioasis Y1 Classic Mp3 devices</p>
               </div>
-              <button 
+              <button
                 onClick={() => setShowHelpModal(false)}
                 className="p-1 hover:bg-[#3A3A3A] transition-colors text-[#CCCCCC] hover:text-[#FFFFFF] rounded-sm"
               >
@@ -242,9 +248,9 @@ const MenuBar: React.FC<MenuBarProps> = ({
             </div>
 
             <div className="space-y-3">
-              <a 
-                href="https://github.com/karliky/InnioasisY1Themes-tool" 
-                target="_blank" 
+              <a
+                href="https://github.com/karliky/InnioasisY1Themes-tool"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 p-3 bg-[#3A3A3A] hover:bg-[#404040] border border-[#4A4A4A] hover:border-[#3C7FD5] transition-colors rounded-sm group"
               >
@@ -306,23 +312,23 @@ const MenuBar: React.FC<MenuBarProps> = ({
                   }
                 `}</style>
                 <g className="ipod-body-group">
-                  <rect x="14" y="10" width="42" height="52" rx="10" ry="10" fill="white" stroke="currentColor"/>
-                  <rect x="19" y="15" width="32" height="22" rx="4" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.8"/>
+                  <rect x="14" y="10" width="42" height="52" rx="10" ry="10" fill="white" stroke="currentColor" />
+                  <rect x="19" y="15" width="32" height="22" rx="4" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.8" />
                   <g className="ipod-face-move">
                     <g className="ipod-blink">
-                      <ellipse cx="27" cy="25" rx="2.5" ry="3.5" fill="currentColor" stroke="none"/>
-                      <ellipse cx="43" cy="25" rx="2.5" ry="3.5" fill="currentColor" stroke="none"/>
+                      <ellipse cx="27" cy="25" rx="2.5" ry="3.5" fill="currentColor" stroke="none" />
+                      <ellipse cx="43" cy="25" rx="2.5" ry="3.5" fill="currentColor" stroke="none" />
                     </g>
                     <path d="M32 28 Q 33.5 30, 35 28 Q 36.5 30, 38 28" fill="none" stroke="currentColor" strokeWidth="1.5" />
-                    <path d="M23 29 H 25" stroke="currentColor" strokeWidth="1.5" opacity="0.3"/>
-                    <path d="M45 29 H 47" stroke="currentColor" strokeWidth="1.5" opacity="0.3"/>
+                    <path d="M23 29 H 25" stroke="currentColor" strokeWidth="1.5" opacity="0.3" />
+                    <path d="M45 29 H 47" stroke="currentColor" strokeWidth="1.5" opacity="0.3" />
                   </g>
-                  <circle cx="35" cy="49" r="7" fill="none" stroke="currentColor" strokeWidth="2"/>
-                  <circle cx="35" cy="49" r="2" fill="currentColor" stroke="none"/>
+                  <circle cx="35" cy="49" r="7" fill="none" stroke="currentColor" strokeWidth="2" />
+                  <circle cx="35" cy="49" r="2" fill="currentColor" stroke="none" />
                   <g className="music-vibe">
-                    <path d="M58 10 V 2 L 64 0 V 8" fill="none" stroke="currentColor" strokeWidth="2"/>
-                    <circle cx="56" cy="10" r="2" fill="currentColor" stroke="none"/>
-                    <circle cx="62" cy="8" r="2" fill="currentColor" stroke="none"/>
+                    <path d="M58 10 V 2 L 64 0 V 8" fill="none" stroke="currentColor" strokeWidth="2" />
+                    <circle cx="56" cy="10" r="2" fill="currentColor" stroke="none" />
+                    <circle cx="62" cy="8" r="2" fill="currentColor" stroke="none" />
                   </g>
                 </g>
               </svg>
@@ -330,21 +336,21 @@ const MenuBar: React.FC<MenuBarProps> = ({
 
             <div className="mt-6 space-y-3">
               <p className="text-[10px] font-bold text-[#3C7FD5] uppercase tracking-[0.1em]" style={{ fontFamily: 'var(--font-mono)' }}>Credits</p>
-              <a 
-                href="https://x.com/k4rliky" 
-                target="_blank" 
+              <a
+                href="https://x.com/k4rliky"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-[10px] text-[#CCCCCC] hover:text-[#FFFFFF] transition-colors flex items-center gap-2 group"
                 style={{ fontFamily: 'var(--font-mono)' }}
               >
                 <svg className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                 </svg>
                 <span>x.com/k4rliky</span>
               </a>
-              <a 
-                href="https://karliky.com" 
-                target="_blank" 
+              <a
+                href="https://karliky.com"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-[10px] text-[#CCCCCC] hover:text-[#FFFFFF] transition-colors flex items-center gap-2 group"
                 style={{ fontFamily: 'var(--font-mono)' }}
@@ -354,9 +360,9 @@ const MenuBar: React.FC<MenuBarProps> = ({
                 </svg>
                 <span>karliky.com</span>
               </a>
-              <a 
-                href="https://karliky.dev" 
-                target="_blank" 
+              <a
+                href="https://karliky.dev"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-[10px] text-[#CCCCCC] hover:text-[#FFFFFF] transition-colors flex items-center gap-2 group"
                 style={{ fontFamily: 'var(--font-mono)' }}
@@ -386,7 +392,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
                 <h3 className="text-xl font-bold text-[#FFFFFF]" style={{ fontFamily: 'var(--font-body)' }}>Join the Timmkoo Modders Discord!</h3>
                 <p className="text-[10px] text-[#888888] mt-1" style={{ fontFamily: 'var(--font-mono)' }}>We'd love your feedback and ideas. Join the <a href="https://discord.gg/3zbfaTNN7V" target="_blank" rel="noopener noreferrer" className="text-[#3C7FD5] underline">Timmkoo Modders Discord</a> and head to the <span className="font-bold text-[#3C7FD5]">#themes</span> channel!</p>
               </div>
-              <button 
+              <button
                 onClick={() => setShowFeedbackModal(false)}
                 className="p-1 hover:bg-[#3A3A3A] transition-colors text-[#CCCCCC] hover:text-[#FFFFFF] rounded-sm"
               >

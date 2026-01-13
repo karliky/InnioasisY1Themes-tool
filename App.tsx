@@ -670,6 +670,7 @@ const App: React.FC = () => {
         return;
       }
       // Show toast for all other music menu items (not implemented)
+      setToastMessage('Not implemented');
       setShowToast(true);
     } else if (themeViewId === 'music_folders') {
       // Show toast for folder clicks (not implemented)

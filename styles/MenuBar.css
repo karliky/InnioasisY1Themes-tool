@@ -1,0 +1,358 @@
+/* MenuBar Styles - Photoshop Theme */
+
+.menubar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 40px;
+  background: linear-gradient(180deg, #2D2D2D 0%, #262626 100%);
+  border-bottom: 1px solid #1F1F1F;
+  padding: 0 12px;
+  gap: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  user-select: none;
+}
+
+.menubar-left {
+  display: flex;
+  gap: 0;
+  align-items: center;
+}
+
+.menu-item-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.menu-item {
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #CCCCCC;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+.menu-item:hover:not(:disabled) {
+  background-color: rgba(60, 127, 213, 0.2);
+  color: #FFFFFF;
+}
+
+.menu-item:active:not(:disabled) {
+  background-color: rgba(60, 127, 213, 0.35);
+}
+
+.menu-item:disabled {
+  color: #666666;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Dropdown Menu Styles */
+.menu-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background: #3A3A3A;
+  border: 1px solid #2D2D2D;
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  min-width: 200px;
+  padding: 4px 0;
+  z-index: 1000;
+  animation: slideDown 0.15s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.menu-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 8px 16px;
+  font-size: 13px;
+  color: #CCCCCC;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.1s ease;
+  gap: 20px;
+}
+
+.menu-option:hover:not(:disabled) {
+  background-color: rgba(60, 127, 213, 0.25);
+  color: #FFFFFF;
+}
+
+.menu-option:active:not(:disabled) {
+  background-color: rgba(60, 127, 213, 0.4);
+}
+
+.menu-option:disabled {
+  color: #666666;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.menu-divider {
+  height: 1px;
+  background-color: #4A4A4A;
+  margin: 4px 0;
+}
+
+.shortcut {
+  font-size: 11px;
+  color: #888888;
+  font-weight: 400;
+  margin-left: auto;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  letter-spacing: 0.5px;
+}
+
+/* Submenu Styles */
+.menu-submenu {
+  position: relative;
+  padding: 8px 16px;
+  font-size: 13px;
+  color: #CCCCCC;
+  background: none;
+  border: none;
+  text-align: left;
+  width: 100%;
+  transition: background-color 0.1s ease;
+}
+
+.menu-submenu:hover {
+  background-color: rgba(60, 127, 213, 0.25);
+  color: #FFFFFF;
+}
+
+.menu-submenu::after {
+  content: '▶';
+  position: absolute;
+  right: 12px;
+  font-size: 10px;
+  color: #666666;
+}
+
+.menu-submenu-items {
+  display: none;
+  position: absolute;
+  left: calc(100% + 4px);
+  top: -4px;
+  background: #3A3A3A;
+  border: 1px solid #2D2D2D;
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  min-width: 180px;
+  padding: 4px 0;
+  z-index: 1001;
+}
+
+.menu-submenu:hover .menu-submenu-items {
+  display: block;
+  animation: slideDown 0.15s ease;
+}
+
+.menu-submenu-items .menu-option {
+  width: 100%;
+}
+
+/* Right Side */
+.menubar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-palette {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #3A3A3A;
+  border: 1px solid #4A4A4A;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: #888888;
+  min-width: 200px;
+  height: 28px;
+}
+
+.search-input {
+  background: none;
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: 12px;
+  color: #CCCCCC;
+}
+
+.search-input::placeholder {
+  color: #555555;
+}
+
+/* Search Results Dropdown */
+.search-results {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #2D2D2D;
+  border: 1px solid #3A3A3A;
+  border-radius: 6px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  overflow: hidden;
+  animation: slideDown 0.15s ease;
+  max-width: 360px;
+}
+
+.search-results-header {
+  padding: 8px 12px;
+  border-bottom: 1px solid #3A3A3A;
+  background: #262626;
+}
+
+.search-results-list {
+  max-height: 320px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: #CCCCCC;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  text-align: left;
+}
+
+.search-result-item:hover {
+  background: #3A3A3A;
+  color: #FFFFFF;
+}
+
+.search-result-item.selected {
+  background: rgba(60, 127, 213, 0.3);
+  color: #FFFFFF;
+}
+
+.search-result-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.search-result-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.search-result-label {
+  font-weight: 500;
+  color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-result-description {
+  font-size: 11px;
+  color: #888888;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-result-highlight {
+  font-size: 12px;
+  color: #3C7FD5;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.search-results-footer {
+  padding: 6px 12px;
+  border-top: 1px solid #3A3A3A;
+  background: #262626;
+  text-align: center;
+}
+
+.search-results-empty {
+  padding: 32px 16px;
+  text-align: center;
+  background: #2D2D2D;
+}
+
+/* Scrollbar styling */
+.search-results-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.search-results-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.search-results-list::-webkit-scrollbar-thumb {
+  background: #4A4A4A;
+  border-radius: 3px;
+}
+
+.search-results-list::-webkit-scrollbar-thumb:hover {
+  background: #5A5A5A;
+}
+
+/* Checkmark for active items */
+.menu-option.active::before {
+  content: '✓';
+  margin-right: 8px;
+}
+
+/* Responsive - hide menubar on very small screens */
+@media (max-width: 768px) {
+  .menubar {
+    height: 44px;
+    padding: 0 8px;
+  }
+
+  .menu-item {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .menu-dropdown {
+    min-width: 160px;
+  }
+
+  .menu-option {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .search-palette {
+    display: none;
+  }
+}

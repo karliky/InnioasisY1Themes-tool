@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { LoadedTheme } from '../types';
 import { deduplicateImagesByHash } from '../utils/imageHashUtils';
+import { Tooltip } from './Tooltip';
 
 interface EquivalentImagesModalProps {
   isOpen: boolean;
@@ -179,9 +180,10 @@ const EquivalentImagesModal: React.FC<EquivalentImagesModalProps> = ({
               alignItems: 'center',
               justifyContent: 'center'
             }}
-            title="Close"
           >
-            ✕
+            <Tooltip content="Close">
+              <span>✕</span>
+            </Tooltip>
           </button>
         </div>
 

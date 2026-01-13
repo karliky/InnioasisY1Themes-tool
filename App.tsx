@@ -3,9 +3,13 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import ClickWheel from './components/ClickWheel';
 import ThemeDisplay from './components/ThemeDisplay';
 import ImageAssetsSidebar from './components/ImageAssetsSidebar';
+import MenuBar from './components/MenuBar';
+import ThemeTabs from './components/ThemeTabs';
+import { Tooltip } from './components/Tooltip';
 import { Song, LoadedTheme, ThemeAssetInfo } from './types';
 import { MOCK_SONGS } from './constants';
 import { loadAvailableThemes, loadClonedThemes, cloneTheme, updateClonedThemeAsset, deleteClonedTheme, updateClonedThemeSpec, importThemeFromZip } from './services/themeService';
+import { downloadTheme } from './utils/themeExport';
 
 const DEVICE_BACKGROUND_COLORS: Record<string, string> = {
   black: '#2a2a2a', // Lighter gray for better contrast with black device
@@ -88,6 +92,54 @@ const App: React.FC = () => {
   const [playbackProgress, setPlaybackProgress] = useState(0); // 0-1
 
   const [availableThemes, setAvailableThemes] = useState<LoadedTheme[]>([]);
+
+  // Save theme tab order to localStorage
+  const saveThemeTabOrder = useCallback((themes: LoadedTheme[]) => {
+    const editableIds = themes.filter(t => t.isEditable).map(t => t.id);
+    try {
+      localStorage.setItem('themeTabOrder', JSON.stringify(editableIds));
+    } catch (e) {
+      console.warn('Failed to save theme tab order:', e);
+    }
+  }, []);
+
+  // Load theme tab order from localStorage
+  const getThemeTabOrder = useCallback((): string[] => {
+    try {
+      const saved = localStorage.getItem('themeTabOrder');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.warn('Failed to load theme tab order:', e);
+      return [];
+    }
+  }, []);
+
+  // Sort themes according to saved order
+  const sortThemesByTabOrder = useCallback((themes: LoadedTheme[]): LoadedTheme[] => {
+    const savedOrder = getThemeTabOrder();
+    const editableThemes = themes.filter(t => t.isEditable);
+    const installedThemes = themes.filter(t => !t.isEditable);
+    
+    if (savedOrder.length === 0) {
+      // No saved order, sort editables by clonedDate (newest first)
+      const sortedEditables = [...editableThemes].sort((a, b) => 
+        (b.clonedDate || '').localeCompare(a.clonedDate || '')
+      );
+      return [...installedThemes, ...sortedEditables];
+    }
+    
+    // Sort editables according to saved order
+    const orderedEditables = editableThemes.sort((a, b) => {
+      const aIndex = savedOrder.indexOf(a.id);
+      const bIndex = savedOrder.indexOf(b.id);
+      if (aIndex === -1) return 1; // New themes go to the end
+      if (bIndex === -1) return -1;
+      return aIndex - bIndex;
+    });
+    
+    return [...installedThemes, ...orderedEditables];
+  }, [getThemeTabOrder]);
+
   const [activeTheme, setActiveTheme] = useState<LoadedTheme | null>(null);
   const [themeViewId, setThemeViewId] = useState<string | null>(null);
   
@@ -117,6 +169,9 @@ const App: React.FC = () => {
   // Toast state
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('Not Implemented');
+
+  // Preferences modal state
+  const [showPreferences, setShowPreferences] = useState(false);
 
   // Debounce refs for spec changes (to avoid losing input focus)
   const pendingSpecChangesRef = useRef<any>(null);
@@ -332,12 +387,11 @@ const App: React.FC = () => {
           return a.id.localeCompare(b.id);
         });
 
-        // Sort cloned by clonedDate (newest first)
-        const clonedSorted = [...cloned].sort((a, b) => (b.clonedDate || '').localeCompare(a.clonedDate || ''));
-
-        // Combine both lists using the sorted order
-        const all = [...installedSorted, ...clonedSorted];
+        // Combine and sort using tab order
+        const combined = [...installedSorted, ...cloned];
+        const all = sortThemesByTabOrder(combined);
         setAvailableThemes(all);
+        saveThemeTabOrder(all);
 
         if (all.length === 0) {
           console.error('No themes found in themes folder');
@@ -346,9 +400,8 @@ const App: React.FC = () => {
         }
 
         // Determine default theme selection
-        const defaultBlank = installedSorted.find(t => t.id.toLowerCase() === 'default blank');
-        const sortedThemes = [...installedSorted, ...clonedSorted];
-        const firstTheme = defaultBlank ?? sortedThemes[0];
+        const aeroTheme = installedSorted.find(t => t.id.toLowerCase() === 'aero');
+        const firstTheme = aeroTheme ?? all[0];
 
         // Check for persisted theme preference
         const persisted = (() => { try { return localStorage.getItem('activeThemeId'); } catch { return null; } })();
@@ -362,7 +415,7 @@ const App: React.FC = () => {
           }
         }
 
-        // Use Default blank as default (if present); else first theme
+        // Use Aero as default (if present); else first theme
         setActiveTheme(firstTheme);
         setThemeViewId('home');
         setIsLoading(false);
@@ -521,7 +574,7 @@ const App: React.FC = () => {
         return Math.max(prev - 1, 0);
       });
     } else if (themeViewId === 'settings') {
-      const settingsMenuItems = ['Shutdown', 'Timed shutdown', 'Shuffle', 'Repeat', 'Equalizer', 'File extension', 'Key lock', 'Key tone', 'Key vibration', 'Wallpaper', 'Backlight', 'Brightness', 'Display battery', 'Date & Time', 'Theme', 'Language', 'Factory reset', 'Clear cache', 'About'];
+      const settingsMenuItems = ['Shutdown', 'Timed shutdown', 'Shuffle', 'Repeat', 'Equalizer', 'File extension', 'Key lock', 'Key tone', 'Key vibration', 'Wallpaper', 'Brightness', 'Display battery', 'Date & Time', 'Theme', 'Language', 'Factory reset', 'Clear cache', 'About'];
       setThemeSelectedIndex(prev => {
         if (direction === 'down') return Math.min(prev + 1, settingsMenuItems.length - 1);
         return Math.max(prev - 1, 0);
@@ -640,7 +693,7 @@ const App: React.FC = () => {
       // Show toast for all audiobooks menu items (not implemented)
       setShowToast(true);
     } else if (themeViewId === 'settings') {
-      const settingsMenuItems = ['Shutdown', 'Timed shutdown', 'Shuffle', 'Repeat', 'Equalizer', 'File extension', 'Key lock', 'Key tone', 'Key vibration', 'Wallpaper', 'Backlight', 'Brightness', 'Display battery', 'Date & Time', 'Theme', 'Language', 'Factory reset', 'Clear cache', 'About'];
+      const settingsMenuItems = ['Shutdown', 'Timed shutdown', 'Shuffle', 'Repeat', 'Equalizer', 'File extension', 'Key lock', 'Key tone', 'Key vibration', 'Wallpaper', 'Brightness', 'Display battery', 'Date & Time', 'Theme', 'Language', 'Factory reset', 'Clear cache', 'About'];
       const selected = settingsMenuItems[themeSelectedIndex];
       if (selected === 'Theme') {
         setThemeHistory(prev => [...prev, themeViewId]);
@@ -688,7 +741,207 @@ const App: React.FC = () => {
     }
   };
 
+  // Menu Bar Handlers - MUST be before any conditional returns
+  const handleNewTheme = useCallback(async () => {
+    try {
+      const newTheme = await cloneTheme(availableThemes.find(t => t.id.toLowerCase() === 'default blank') || availableThemes[0]);
+      const updated = [...availableThemes, newTheme];
+      setAvailableThemes(updated);
+      saveThemeTabOrder(updated);
+      setActiveTheme(newTheme);
+      try { localStorage.setItem('activeThemeId', newTheme.id); } catch {}
+      setToastMessage('New theme created');
+      setShowToast(true);
+    } catch (error: any) {
+      console.error('Failed to create new theme:', error);
+      setToastMessage(error.message || 'Failed to create new theme');
+      setShowToast(true);
+    }
+  }, [availableThemes, saveThemeTabOrder]);
 
+  const handleOpenTheme = useCallback(() => {
+    // Open file dialog to import theme from ZIP
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.zip';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        try {
+          setToastMessage('Importing theme...');
+          setShowToast(true);
+          const newTheme = await importThemeFromZip(file);
+          setAvailableThemes(prev => [...prev, newTheme]);
+          setActiveTheme(newTheme);
+          try { localStorage.setItem('activeThemeId', newTheme.id); } catch {}
+          setToastMessage('Theme imported successfully!');
+          setShowToast(true);
+        } catch (error: any) {
+          console.error('Failed to import theme:', error);
+          setToastMessage(error.message || 'Failed to import theme');
+          setShowToast(true);
+        }
+      }
+    };
+    input.click();
+  }, []);
+
+  const handleSaveTheme = useCallback(async () => {
+    if (!activeTheme || !activeTheme.isEditable) return;
+    try {
+      await updateClonedThemeSpec(activeTheme.id, activeTheme.spec);
+      setToastMessage('Theme saved successfully');
+      setShowToast(true);
+    } catch (error: any) {
+      console.error('Failed to save theme:', error);
+      setToastMessage(error.message || 'Failed to save theme');
+      setShowToast(true);
+    }
+  }, [activeTheme]);
+
+  const handleExportTheme = useCallback(async (format: 'zip' | 'metadata') => {
+    if (!activeTheme) return;
+    try {
+      setToastMessage('Exporting theme...');
+      setShowToast(true);
+      await downloadTheme(activeTheme);
+      setToastMessage(`Theme exported as ${format}`);
+      setShowToast(true);
+    } catch (error: any) {
+      console.error('Failed to export theme:', error);
+      setToastMessage(error.message || 'Failed to export theme');
+      setShowToast(true);
+    }
+  }, [activeTheme]);
+
+  const handleImportThemes = useCallback(async (format: 'zip' | 'url') => {
+    if (format === 'zip') {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.zip';
+      input.onchange = async (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (file) {
+          try {
+            setToastMessage('Importing theme...');
+            setShowToast(true);
+            const newTheme = await importThemeFromZip(file);
+            setAvailableThemes(prev => [...prev, newTheme]);
+            setActiveTheme(newTheme);
+            try { localStorage.setItem('activeThemeId', newTheme.id); } catch {}
+            setToastMessage('Theme imported successfully!');
+            setShowToast(true);
+          } catch (error: any) {
+            console.error('Failed to import theme:', error);
+            setToastMessage(error.message || 'Failed to import theme');
+            setShowToast(true);
+          }
+        }
+      };
+      input.click();
+    }
+  }, []);
+
+  const handleDeleteTheme = useCallback(async (themeId: string) => {
+    if (!confirm(`Delete theme "${themeId}"?`)) return;
+    try {
+      await deleteClonedTheme(themeId);
+      setAvailableThemes(prev => prev.filter(t => t.id !== themeId));
+      if (activeTheme?.id === themeId) {
+        const nextTheme = availableThemes.find(t => t.id !== themeId) || null;
+        setActiveTheme(nextTheme);
+      }
+      setToastMessage('Theme deleted');
+      setShowToast(true);
+    } catch (error: any) {
+      console.error('Failed to delete theme:', error);
+      setToastMessage(error.message || 'Failed to delete theme');
+      setShowToast(true);
+    }
+  }, [activeTheme, availableThemes]);
+
+  const handleDuplicateTheme = useCallback(async () => {
+    if (!activeTheme) return;
+    try {
+      const newTheme = await cloneTheme(activeTheme);
+      setAvailableThemes(prev => [...prev, newTheme]);
+      setActiveTheme(newTheme);
+      try { localStorage.setItem('activeThemeId', newTheme.id); } catch {}
+      setToastMessage('Theme duplicated');
+      setShowToast(true);
+    } catch (error: any) {
+      console.error('Failed to duplicate theme:', error);
+      setToastMessage(error.message || 'Failed to duplicate theme');
+      setShowToast(true);
+    }
+  }, [activeTheme]);
+
+  const handleCloneCurrentTheme = useCallback(async () => {
+    if (!activeTheme) return;
+    try {
+      const newClone = await cloneTheme(activeTheme);
+      setAvailableThemes(prev => [...prev, newClone]);
+      setActiveTheme(newClone);
+      try { localStorage.setItem('activeThemeId', newClone.id); } catch {}
+      setToastMessage('Theme cloned');
+      setShowToast(true);
+    } catch (error: any) {
+      console.error('Failed to clone theme:', error);
+      setToastMessage(error.message || 'Failed to clone theme');
+      setShowToast(true);
+    }
+  }, [activeTheme]);
+
+  const handleRevertTheme = useCallback(async () => {
+    if (!activeTheme) return;
+    if (!confirm('Discard all changes and revert to saved version?')) return;
+    try {
+      // Reload the theme from storage
+      const reloaded = availableThemes.find(t => t.id === activeTheme.id);
+      if (reloaded) {
+        setActiveTheme(reloaded);
+        setToastMessage('Theme reverted');
+        setShowToast(true);
+      }
+    } catch (error: any) {
+      console.error('Failed to revert theme:', error);
+      setToastMessage(error.message || 'Failed to revert theme');
+      setShowToast(true);
+    }
+  }, [activeTheme, availableThemes]);
+
+  const handleCloseThemeTab = useCallback(async (themeId: string) => {
+    if (!confirm(`Close theme "${themeId}"? This will delete it permanently.`)) return;
+    try {
+      await deleteClonedTheme(themeId);
+      setAvailableThemes(prev => prev.filter(t => t.id !== themeId));
+      if (activeTheme?.id === themeId) {
+        const nextEditable = availableThemes.find(t => t.isEditable && t.id !== themeId);
+        const nextTheme = nextEditable || availableThemes.find(t => !t.isEditable);
+        setActiveTheme(nextTheme || null);
+        if (nextTheme) {
+          try { localStorage.setItem('activeThemeId', nextTheme.id); } catch {}
+        }
+      }
+      setToastMessage('Theme closed');
+      setShowToast(true);
+    } catch (error: any) {
+      console.error('Failed to close theme:', error);
+      setToastMessage(error.message || 'Failed to close theme');
+      setShowToast(true);
+    }
+  }, [activeTheme, availableThemes]);
+
+  const handleSearchAssetSelect = useCallback((asset: { type: 'image' | 'color' | 'metadata'; id: string; configKey?: string }) => {
+    // This will trigger sidebar to focus on the selected asset
+    // The ImageAssetsSidebar component will handle scrolling to and highlighting the asset
+    // For now, just ensure the right sidebar is open
+    if (!isRightSidebarOpen) {
+      setIsRightSidebarOpen(true);
+    }
+    // Dispatch custom event for sidebar to listen to
+    window.dispatchEvent(new CustomEvent('searchAssetSelected', { detail: asset }));
+  }, [isRightSidebarOpen]);
 
   if (isLoading) {
     return (
@@ -713,32 +966,85 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="w-screen h-screen flex bg-black text-white font-mono overflow-hidden">
-      {/* Left Sidebar: Theme Selector */}
-      {isLeftSidebarOpen && (
-        <div className="w-80 border-r-2 border-[#3A3530] bg-[#1A1612] flex flex-col z-30 overflow-y-auto relative editorial-sidebar" style={{ boxShadow: '4px 0 12px rgba(0,0,0,0.3)' }}>
-          <div className="p-6 border-b-2 border-[#3A3530] bg-[#25201B] flex items-start justify-between relative z-10" style={{ borderBottomStyle: 'solid' }}>
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold text-[#D4A574] tracking-tight" style={{ fontFamily: 'var(--font-editorial)' }}>Theme Selector</h2>
-              <p className="text-[10px] text-[#6B7A47] mt-1 uppercase tracking-wider" style={{ fontFamily: 'var(--font-mono)' }}>Theme Maker Y1</p>
-            </div>
-            <button 
-              onClick={() => setIsLeftSidebarOpen(false)}
-              className="p-1.5 hover:bg-[#2F2A25] transition-colors text-[#D4A574] hover:text-[#E8E3D5] rounded-sm"
-              title="Hide sidebar"
-              style={{ border: '1px solid transparent' }}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-              </svg>
-            </button>
-          </div>
+    <div className="w-screen h-screen flex flex-col bg-black text-white font-mono overflow-hidden">
+      {/* Global Menu Bar */}
+      <MenuBar
+        activeTheme={activeTheme}
+        availableThemes={availableThemes}
+        isLeftSidebarOpen={isLeftSidebarOpen}
+        isRightSidebarOpen={isRightSidebarOpen}
+        deviceColor={deviceColor}
+        assets={activeTheme?.loadedAssets || []}
+        spec={activeTheme?.spec}
+        onSetActiveTheme={setActiveTheme}
+        onToggleLeftSidebar={setIsLeftSidebarOpen}
+        onToggleRightSidebar={setIsRightSidebarOpen}
+        onSetDeviceColor={setDeviceColor}
+        onNewTheme={handleNewTheme}
+        onOpenTheme={handleOpenTheme}
+        onExportTheme={handleExportTheme}
+        onImportThemes={handleImportThemes}
+        onDeleteTheme={handleDeleteTheme}
+        onDuplicateTheme={handleDuplicateTheme}
+        onCloneCurrentTheme={handleCloneCurrentTheme}
+        onRevertTheme={handleRevertTheme}
+        onShowPreferences={() => setShowPreferences(true)}
+        onSearchAssetSelect={handleSearchAssetSelect}
+      />
 
+      {/* Theme Tabs */}
+      <ThemeTabs
+        themes={availableThemes.filter(t => t.isEditable)}
+        activeTheme={activeTheme}
+        onSelectTheme={(theme) => {
+          setActiveTheme(theme);
+          try { localStorage.setItem('activeThemeId', theme.id); } catch {}
+        }}
+        onCloseTheme={handleCloseThemeTab}
+        onRenameTheme={async (themeId: string, newName: string) => {
+          const theme = availableThemes.find(t => t.id === themeId);
+          if (theme && theme.isEditable) {
+            try {
+              const updatedSpec = {
+                ...theme.spec,
+                theme_info: {
+                  ...theme.spec.theme_info,
+                  title: newName
+                }
+              };
+              await updateClonedThemeSpec(themeId, updatedSpec);
+              
+              // Update the theme in available themes
+              setAvailableThemes(prev => 
+                prev.map(t => t.id === themeId ? { ...t, spec: updatedSpec } : t)
+              );
+              
+              // Update active theme if it's the one being renamed
+              if (activeTheme?.id === themeId) {
+                setActiveTheme({ ...activeTheme, spec: updatedSpec });
+              }
+              
+              setToastMessage(`Theme renamed to "${newName}"`);
+              setShowToast(true);
+            } catch (error: any) {
+              console.error('Failed to rename theme:', error);
+              setToastMessage(error.message || 'Failed to rename theme');
+              setShowToast(true);
+            }
+          }
+        }}
+      />
+
+      {/* Main Content Area */}
+      <div className="flex flex-1 bg-black text-white font-mono overflow-hidden">
+        {/* Left Sidebar: Theme Selector */}
+      {isLeftSidebarOpen && (
+        <div className="w-80 border-r border-[#3A3A3A] bg-[#2D2D2D] flex flex-col z-30 overflow-y-auto relative editorial-sidebar" style={{ boxShadow: '2px 0 8px rgba(0,0,0,0.5)' }}>
           <div className="flex-1 overflow-y-auto p-6 space-y-10 no-scrollbar relative z-10">
             {/* Device Status Section */}
             <section className="space-y-4 editorial-section">
-              <h3 className="text-[11px] font-bold text-[#D4A574] uppercase tracking-[0.15em] border-b-2 border-[#C97D60] pb-2 flex items-center gap-2" style={{ fontFamily: 'var(--font-mono)' }}>
-                <svg className="w-4 h-4 text-[#C97D60]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+              <h3 className="text-[11px] font-bold text-[#C0C0C0] uppercase tracking-[0.15em] border-b border-[#3C7FD5] pb-2 flex items-center gap-2" style={{ fontFamily: 'var(--font-mono)' }}>
+                <svg className="w-4 h-4 text-[#3C7FD5]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 Device Status
@@ -746,18 +1052,18 @@ const App: React.FC = () => {
               <div className="space-y-4 pl-2">
                 {/* Battery Level */}
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase text-[#8A8578] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Battery Level</label>
+                  <label className="text-[10px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Battery Level</label>
                   <div className="flex gap-2">
                     {[0, 1, 2, 3].map((level) => (
                       <button
                         key={level}
                         onClick={() => setBatteryLevel(level)}
-                        className={`flex-1 py-2 px-3 text-center text-[10px] font-bold uppercase transition-all border-2 rounded-sm ${
+                        className={`flex-1 py-2 px-3 text-center text-[10px] font-bold uppercase transition-all border rounded-sm ${
                           batteryLevel === level
-                            ? 'bg-[#C97D60] border-[#E8A576] text-[#1A1612]'
-                            : 'bg-[#2F2A25] border-[#4A4540] text-[#D4A574] hover:border-[#6B7A47]'
+                            ? 'bg-[#3C7FD5] border-[#5A9FFF] text-white'
+                            : 'bg-[#3A3A3A] border-[#4A4A4A] text-[#AAAAAA] hover:border-[#5A9FFF]'
                         }`}
-                        style={{ fontFamily: 'var(--font-mono)', boxShadow: batteryLevel === level ? '2px 2px 0 0 #1A1612' : 'none' }}
+                        style={{ fontFamily: 'var(--font-mono)' }}
                       >
                         {((level + 1) * 25)}%
                       </button>
@@ -772,9 +1078,9 @@ const App: React.FC = () => {
                       type="checkbox"
                       checked={isCharging}
                       onChange={e => setIsCharging(e.target.checked)}
-                      className="w-4 h-4 bg-[#2F2A25] border-2 border-[#4A4540] rounded focus:ring-2 focus:ring-[#C97D60]"
+                      className="w-4 h-4 bg-[#3A3A3A] border border-[#4A4A4A] rounded focus:ring-2 focus:ring-[#3C7FD5]"
                     />
-                    <span className="text-[10px] uppercase text-[#8A8578] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Charging</span>
+                    <span className="text-[10px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Charging</span>
                   </label>
                 </div>
 
@@ -785,16 +1091,16 @@ const App: React.FC = () => {
                       type="checkbox"
                       checked={showTimeInTitle}
                       onChange={e => setShowTimeInTitle(e.target.checked)}
-                      className="w-4 h-4 bg-[#2F2A25] border-2 border-[#4A4540] rounded focus:ring-2 focus:ring-[#C97D60]"
+                      className="w-4 h-4 bg-[#3A3A3A] border border-[#4A4A4A] rounded focus:ring-2 focus:ring-[#3C7FD5]"
                     />
-                    <span className="text-[10px] uppercase text-[#8A8578] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Time in Title</span>
+                    <span className="text-[10px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Time in Title</span>
                   </label>
-                  <p className="text-[9px] text-[#8A8578] ml-6 italic" style={{ fontFamily: 'var(--font-body)' }}>Show hh:mm in Home status bar</p>
+                  <p className="text-[9px] text-[#777777] ml-6 italic" style={{ fontFamily: 'var(--font-body)' }}>Show hh:mm in Home status bar</p>
                 </div>
 
                 {/* Play State */}
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase text-[#8A8578] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Play State</label>
+                  <label className="text-[10px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Play State</label>
                   <select 
                     value={playState || ''} 
                     onChange={e => {
@@ -802,8 +1108,8 @@ const App: React.FC = () => {
                       setPlayState(newState);
                       setIsPlaying(newState === 'playing' || newState === 'fmPlaying' || newState === 'audiobookPlaying');
                     }}
-                    className="w-full bg-[#2F2A25] border-2 border-[#4A4540] px-3 py-2 text-xs text-[#E8E3D5] font-medium focus:outline-none focus:ring-2 focus:ring-[#C97D60] focus:border-[#C97D60]"
-                    style={{ fontFamily: 'var(--font-body)', boxShadow: '2px 2px 0 0 #1A1612' }}
+                    className="w-full bg-[#3A3A3A] border border-[#4A4A4A] px-3 py-2 text-xs text-[#CCCCCC] font-medium focus:outline-none focus:ring-2 focus:ring-[#3C7FD5] focus:border-[#3C7FD5]"
+                    style={{ fontFamily: 'var(--font-body)' }}
                   >
                     <option value="">None</option>
                     <option value="playing">Playing</option>
@@ -816,12 +1122,12 @@ const App: React.FC = () => {
 
                 {/* Headset State */}
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase text-[#8A8578] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Headset</label>
+                  <label className="text-[10px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Headset</label>
                   <select 
                     value={headsetState || ''} 
                     onChange={e => setHeadsetState(e.target.value ? (e.target.value as typeof headsetState) : null)}
-                    className="w-full bg-[#2F2A25] border-2 border-[#4A4540] px-3 py-2 text-xs text-[#E8E3D5] font-medium focus:outline-none focus:ring-2 focus:ring-[#C97D60] focus:border-[#C97D60]"
-                    style={{ fontFamily: 'var(--font-body)', boxShadow: '2px 2px 0 0 #1A1612' }}
+                    className="w-full bg-[#3A3A3A] border border-[#4A4A4A] px-3 py-2 text-xs text-[#CCCCCC] font-medium focus:outline-none focus:ring-2 focus:ring-[#3C7FD5] focus:border-[#3C7FD5]"
+                    style={{ fontFamily: 'var(--font-body)' }}
                   >
                     <option value="">None</option>
                     <option value="withMic">With Mic</option>
@@ -831,12 +1137,12 @@ const App: React.FC = () => {
 
                 {/* Bluetooth State */}
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase text-[#8A8578] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Bluetooth</label>
+                  <label className="text-[10px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Bluetooth</label>
                   <select 
                     value={bluetoothState || ''} 
                     onChange={e => setBluetoothState(e.target.value ? (e.target.value as typeof bluetoothState) : null)}
-                    className="w-full bg-[#2F2A25] border-2 border-[#4A4540] px-3 py-2 text-xs text-[#E8E3D5] font-medium focus:outline-none focus:ring-2 focus:ring-[#C97D60] focus:border-[#C97D60]"
-                    style={{ fontFamily: 'var(--font-body)', boxShadow: '2px 2px 0 0 #1A1612' }}
+                    className="w-full bg-[#3A3A3A] border border-[#4A4A4A] px-3 py-2 text-xs text-[#CCCCCC] font-medium focus:outline-none focus:ring-2 focus:ring-[#3C7FD5] focus:border-[#3C7FD5]"
+                    style={{ fontFamily: 'var(--font-body)' }}
                   >
                     <option value="">None</option>
                     <option value="connected">Connected</option>
@@ -852,9 +1158,9 @@ const App: React.FC = () => {
                       type="checkbox"
                       checked={ringtoneEnabled}
                       onChange={e => setRingtoneEnabled(e.target.checked)}
-                      className="w-4 h-4 bg-[#2F2A25] border-2 border-[#4A4540] rounded focus:ring-2 focus:ring-[#C97D60]"
+                      className="w-4 h-4 bg-[#3A3A3A] border border-[#4A4A4A] rounded focus:ring-2 focus:ring-[#3C7FD5]"
                     />
-                    <span className="text-[10px] uppercase text-[#8A8578] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Ringtone</span>
+                    <span className="text-[10px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Ringtone</span>
                   </label>
                 </div>
 
@@ -865,31 +1171,10 @@ const App: React.FC = () => {
                       type="checkbox"
                       checked={vibratorEnabled}
                       onChange={e => setVibratorEnabled(e.target.checked)}
-                      className="w-4 h-4 bg-[#2F2A25] border-2 border-[#4A4540] rounded focus:ring-2 focus:ring-[#C97D60]"
+                      className="w-4 h-4 bg-[#3A3A3A] border border-[#4A4A4A] rounded focus:ring-2 focus:ring-[#3C7FD5]"
                     />
-                    <span className="text-[10px] uppercase text-[#8A8578] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Vibrator</span>
+                    <span className="text-[10px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Vibrator</span>
                   </label>
-                </div>
-
-                {/* Backlight Timeout */}
-                <div className="space-y-2">
-                  <label className="text-[10px] uppercase text-[#8A8578] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Backlight Timeout</label>
-                  <select 
-                    value={backlightValue}
-                    onChange={e => setBacklightValue(e.target.value as typeof backlightValue)}
-                    className="w-full bg-[#2F2A25] border-2 border-[#4A4540] px-3 py-2 text-xs text-[#E8E3D5] font-medium focus:outline-none focus:ring-2 focus:ring-[#C97D60] focus:border-[#C97D60]"
-                    style={{ fontFamily: 'var(--font-body)', boxShadow: '2px 2px 0 0 #1A1612' }}
-                  >
-                    <option value="10">10s</option>
-                    <option value="15">15s</option>
-                    <option value="30">30s</option>
-                    <option value="45">45s</option>
-                    <option value="60">60s</option>
-                    <option value="120">120s</option>
-                    <option value="300">300s</option>
-                    <option value="always">Always on</option>
-                  </select>
-                  <p className="text-[9px] text-[#8A8578] italic" style={{ fontFamily: 'var(--font-body)' }}>Updates Settings → Backlight icon</p>
                 </div>
 
               </div>
@@ -900,8 +1185,8 @@ const App: React.FC = () => {
                 {/* Pinned Default Theme (always on top) */}
                 {availableThemes.filter(t => !t.isEditable && t.id.toLowerCase() === 'default blank').map((t) => (
                   <section key={`${t.id}-pinned`} className="space-y-3 editorial-section">
-                    <h3 className="text-[11px] font-bold text-[#D4A574] uppercase tracking-[0.15em] border-b-2 border-[#C97D60] pb-2 flex items-center gap-2" style={{ fontFamily: 'var(--font-mono)' }}>
-                      <svg className="w-4 h-4 text-[#C97D60]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                    <h3 className="text-[11px] font-bold text-[#C0C0C0] uppercase tracking-[0.15em] border-b border-[#3C7FD5] pb-2 flex items-center gap-2" style={{ fontFamily: 'var(--font-mono)' }}>
+                      <svg className="w-4 h-4 text-[#3C7FD5]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                       Default Theme
@@ -909,13 +1194,12 @@ const App: React.FC = () => {
                     <div className="flex flex-col gap-2.5 pl-2">
                       <div className="flex gap-2">
                         <button 
-                          className={`flex-1 text-left text-xs border-2 px-3 py-2.5 transition-all ${
+                          className={`flex-1 text-left text-xs border px-3 py-2.5 transition-all ${
                             activeTheme?.id === t.id 
-                              ? 'border-[#6B7A47] bg-[#6B7A47] text-white' 
-                              : 'border-[#4A4540] bg-[#2F2A25] hover:border-[#C97D60] text-[#E8E3D5] hover:bg-[#3A342F]'
+                              ? 'border-[#5A9FFF] bg-[#3C7FD5] text-white' 
+                              : 'border-[#4A4A4A] bg-[#3A3A3A] hover:border-[#3C7FD5] text-[#AAAAAA] hover:bg-[#404040]'
                           }`}
                           style={{ 
-                            boxShadow: activeTheme?.id === t.id ? '2px 2px 0 0 #4A5A2F' : '2px 2px 0 0 #1A1612',
                             fontFamily: 'var(--font-body)'
                           }}
                           onClick={() => {
@@ -925,162 +1209,36 @@ const App: React.FC = () => {
                         >
                           {t.id}
                         </button>
-                        <button
-                          onClick={async () => {
-                            try {
-                              const newClone = await cloneTheme(t);
-                              setAvailableThemes(prev => [...prev, newClone]);
-                              setActiveTheme(newClone);
-                              try { localStorage.setItem('activeThemeId', newClone.id); } catch {}
-                            } catch (error: any) {
-                              console.error('Failed to clone theme:', error);
-                              setToastMessage(error.message || 'Failed to clone theme');
-                              setShowToast(true);
-                            }
-                          }}
-                          className="px-3 py-2.5 border-2 border-[#4A4540] bg-[#2F2A25] hover:border-[#6B7A47] hover:bg-[#3A342F] text-[#D4A574] transition-all"
-                          style={{ boxShadow: '2px 2px 0 0 #1A1612' }}
-                          title="Clone Default blank to edit"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                          </svg>
-                        </button>
+                        <Tooltip content="Clone Default blank to edit">
+                          <button
+                            onClick={async () => {
+                              try {
+                                const newClone = await cloneTheme(t);
+                                setAvailableThemes(prev => [...prev, newClone]);
+                                setActiveTheme(newClone);
+                                try { localStorage.setItem('activeThemeId', newClone.id); } catch {}
+                              } catch (error: any) {
+                                console.error('Failed to clone theme:', error);
+                                setToastMessage(error.message || 'Failed to clone theme');
+                                setShowToast(true);
+                              }
+                            }}
+                            className="px-3 py-2.5 border border-[#4A4A4A] bg-[#3A3A3A] hover:border-[#3C7FD5] hover:bg-[#404040] text-[#999999] transition-all"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                          </button>
+                        </Tooltip>
                       </div>
                     </div>
                   </section>
                 ))}
-                {/* Cloned Themes Section - Show first */}
-                <section className="space-y-3 editorial-section">
-                  <h3 className="text-[11px] font-bold text-[#D4A574] uppercase tracking-[0.15em] border-b-2 border-[#6B7A47] pb-2 flex items-center gap-2 justify-between" style={{ fontFamily: 'var(--font-mono)' }}>
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-[#6B7A47]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                      My Themes
-                    </div>
-                    <button
-                        onClick={() => {
-                          const input = document.createElement('input');
-                          input.type = 'file';
-                          input.accept = '.zip';
-                          input.onchange = async (e) => {
-                            const file = (e.target as HTMLInputElement).files?.[0];
-                            if (file) {
-                              try {
-                                setToastMessage('Importing theme...');
-                                setShowToast(true);
-                                const newTheme = await importThemeFromZip(file);
-                                setAvailableThemes(prev => [...prev, newTheme]);
-                                setActiveTheme(newTheme);
-                                try { localStorage.setItem('activeThemeId', newTheme.id); } catch {}
-                                setToastMessage('Theme imported successfully!');
-                                setShowToast(true);
-                              } catch (error: any) {
-                                console.error('Failed to import theme:', error);
-                                setToastMessage(error.message || 'Failed to import theme');
-                                setShowToast(true);
-                              }
-                            }
-                          };
-                          input.click();
-                        }}
-                        className="flex items-center gap-1 px-2 py-1 text-[9px] bg-[#6B7A47] hover:bg-[#7B8A57] text-white border border-[#7B8A57] rounded transition-colors"
-                        title="Import theme from .zip file"
-                      >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Import
-                      </button>
-                    </h3>
-                    <div className="flex flex-col gap-2.5 pl-2">
-                      {availableThemes
-                        .filter(t => t.isEditable)
-                        .sort((a, b) => {
-                          // Imported themes first (ID starts with 'imported_')
-                          const aIsImported = a.id.startsWith('imported_');
-                          const bIsImported = b.id.startsWith('imported_');
-                          
-                          if (aIsImported && !bIsImported) return -1;
-                          if (!aIsImported && bIsImported) return 1;
-                          
-                          // Within each group, sort alphabetically by title or ID
-                          const aTitle = ((a as any)?.spec?.theme_info?.title || a.id).toLowerCase();
-                          const bTitle = ((b as any)?.spec?.theme_info?.title || b.id).toLowerCase();
-                          return aTitle.localeCompare(bTitle);
-                        })
-                        .map(t => (
-                        <div key={t.id} className="flex gap-2">
-                          <button 
-                            className={`flex-1 text-left text-xs border-2 px-3 py-2.5 transition-all ${
-                              activeTheme?.id === t.id 
-                                ? 'border-[#6B7A47] bg-[#6B7A47] text-white' 
-                                : 'border-[#4A4540] bg-[#2F2A25] hover:border-[#6B7A47] text-[#E8E3D5] hover:bg-[#3A342F]'
-                            }`}
-                            style={{ 
-                              boxShadow: activeTheme?.id === t.id ? '2px 2px 0 0 #4A5A2F' : '2px 2px 0 0 #1A1612',
-                              fontFamily: 'var(--font-body)'
-                            }}
-                            onClick={() => {
-                              console.log('Activating cloned theme:', t.id);
-                              setActiveTheme(t);
-                              try { localStorage.setItem('activeThemeId', t.id); } catch {}
-                            }}
-                          >
-                            <div className="flex items-center gap-2">
-                              {t.id.startsWith('imported_') ? (
-                                <svg className="w-3 h-3 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                              ) : (
-                                <svg className="w-3 h-3 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                              )}
-                              <span>{(t as any)?.spec?.theme_info?.title || t.id.replace(/_clone_\d+$/, '').replace(/^imported_[a-z0-9]+_/, '')}</span>
-                            </div>
-                            {t.originalThemeId && (
-                              <div className="text-[9px] text-white/90 mt-0.5 italic">Clone of {t.originalThemeId}</div>
-                            )}
-                          </button>
-                          <button
-                            onClick={async () => {
-                              if (confirm(`Delete clone "${t.id}"?`)) {
-                                try {
-                                  await deleteClonedTheme(t.id);
-                                  setAvailableThemes(prev => prev.filter(theme => theme.id !== t.id));
-                                  if (activeTheme?.id === t.id) {
-                                    const installed = availableThemes.find(theme => !theme.isEditable);
-                                    if (installed) {
-                                      setActiveTheme(installed);
-                                      try { localStorage.setItem('activeThemeId', installed.id); } catch {}
-                                    }
-                                  }
-                                } catch (error: any) {
-                                  console.error('Failed to delete theme:', error);
-                                  setToastMessage(error.message || 'Failed to delete theme');
-                                  setShowToast(true);
-                                }
-                              }
-                            }}
-                            className="px-3 py-2.5 border-2 border-[#4A4540] bg-[#2F2A25] hover:border-[#C97D60] hover:bg-[#3A342F] text-[#C97D60] transition-all"
-                            style={{ boxShadow: '2px 2px 0 0 #1A1612' }}
-                            title="Delete this cloned theme"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
 
                 {/* Installed Themes Section */}
                 <section className="space-y-3 editorial-section">
-                  <h3 className="text-[11px] font-bold text-[#D4A574] uppercase tracking-[0.15em] border-b-2 border-[#C97D60] pb-2 flex items-center gap-2" style={{ fontFamily: 'var(--font-mono)' }}>
-                    <svg className="w-4 h-4 text-[#C97D60]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                  <h3 className="text-[11px] font-bold text-[#C0C0C0] uppercase tracking-[0.15em] border-b border-[#3C7FD5] pb-2 flex items-center gap-2" style={{ fontFamily: 'var(--font-mono)' }}>
+                    <svg className="w-4 h-4 text-[#3C7FD5]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                     Installed Themes
@@ -1089,13 +1247,12 @@ const App: React.FC = () => {
                     {availableThemes.filter(t => !t.isEditable && t.id.toLowerCase() !== 'default blank').map(t => (
                       <div key={t.id} className="flex gap-2">
                         <button 
-                          className={`flex-1 text-left text-xs border-2 px-3 py-2.5 transition-all ${
+                          className={`flex-1 text-left text-xs border px-3 py-2.5 transition-all ${
                             activeTheme?.id === t.id 
-                              ? 'border-[#6B7A47] bg-[#6B7A47] text-white' 
-                              : 'border-[#4A4540] bg-[#2F2A25] hover:border-[#C97D60] text-[#E8E3D5] hover:bg-[#3A342F]'
+                              ? 'border-[#5A9FFF] bg-[#3C7FD5] text-white' 
+                              : 'border-[#4A4A4A] bg-[#3A3A3A] hover:border-[#3C7FD5] text-[#AAAAAA] hover:bg-[#404040]'
                           }`}
                           style={{ 
-                            boxShadow: activeTheme?.id === t.id ? '2px 2px 0 0 #4A5A2F' : '2px 2px 0 0 #1A1612',
                             fontFamily: 'var(--font-body)'
                           }}
                           onClick={() => {
@@ -1106,27 +1263,27 @@ const App: React.FC = () => {
                         >
                           {t.id}
                         </button>
-                        <button
-                          onClick={async () => {
-                            try {
-                              const newClone = await cloneTheme(t);
-                              setAvailableThemes(prev => [...prev, newClone]);
-                              setActiveTheme(newClone);
-                              try { localStorage.setItem('activeThemeId', newClone.id); } catch {}
-                            } catch (error: any) {
-                              console.error('Failed to clone theme:', error);
-                              setToastMessage(error.message || 'Failed to clone theme');
-                              setShowToast(true);
-                            }
-                          }}
-                          className="px-3 py-2.5 border-2 border-[#4A4540] bg-[#2F2A25] hover:border-[#6B7A47] hover:bg-[#3A342F] text-[#D4A574] transition-all"
-                          style={{ boxShadow: '2px 2px 0 0 #1A1612' }}
-                          title="Clone this theme to edit it"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                          </svg>
-                        </button>
+                        <Tooltip content="Clone this theme to edit it">
+                          <button
+                            onClick={async () => {
+                              try {
+                                const newClone = await cloneTheme(t);
+                                setAvailableThemes(prev => [...prev, newClone]);
+                                setActiveTheme(newClone);
+                                try { localStorage.setItem('activeThemeId', newClone.id); } catch {}
+                              } catch (error: any) {
+                                console.error('Failed to clone theme:', error);
+                                setToastMessage(error.message || 'Failed to clone theme');
+                                setShowToast(true);
+                              }
+                            }}
+                            className="px-3 py-2.5 border border-[#4A4A4A] bg-[#3A3A3A] hover:border-[#3C7FD5] hover:bg-[#404040] text-[#999999] transition-all"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                          </button>
+                        </Tooltip>
                       </div>
                     ))}
                   </div>
@@ -1134,48 +1291,6 @@ const App: React.FC = () => {
               </>
             )}
 
-            {/* Credits Section */}
-            <section className="space-y-3 mt-auto pt-8 border-t-2 border-[#3A3530] editorial-section">
-              <h3 className="text-[11px] font-bold text-[#D4A574] uppercase tracking-[0.15em]" style={{ fontFamily: 'var(--font-mono)' }}>Credits</h3>
-              <div className="space-y-2 pl-2">
-                <a 
-                  href="https://x.com/k4rliky" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-[10px] text-[#D4A574] hover:text-[#E8E3D5] transition-colors flex items-center gap-2 group"
-                  style={{ fontFamily: 'var(--font-mono)' }}
-                >
-                  <svg className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                  </svg>
-                  <span>x.com/k4rliky</span>
-                </a>
-                <a 
-                  href="https://karliky.com" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-[10px] text-[#D4A574] hover:text-[#E8E3D5] transition-colors flex items-center gap-2 group"
-                  style={{ fontFamily: 'var(--font-mono)' }}
-                >
-                  <svg className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                  </svg>
-                  <span>karliky.com</span>
-                </a>
-                <a 
-                  href="https://karliky.dev" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-[10px] text-[#D4A574] hover:text-[#E8E3D5] transition-colors flex items-center gap-2 group"
-                  style={{ fontFamily: 'var(--font-mono)' }}
-                >
-                  <svg className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  <span>karliky.dev</span>
-                </a>
-              </div>
-            </section>
           </div>
 
         </div>
@@ -1188,28 +1303,30 @@ const App: React.FC = () => {
       >
         {/* Left sidebar toggle button (when hidden) */}
         {!isLeftSidebarOpen && (
-          <button 
-            onClick={() => setIsLeftSidebarOpen(true)}
-            className="absolute top-6 left-6 z-40 p-2 hover:opacity-70 transition-opacity text-zinc-400 hover:text-zinc-200 bg-zinc-900/80 rounded-lg border border-zinc-700"
-            title="Show theme selector"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-            </svg>
-          </button>
+          <Tooltip content="Show theme selector">
+            <button 
+              onClick={() => setIsLeftSidebarOpen(true)}
+              className="absolute top-6 left-6 z-40 p-2 hover:opacity-70 transition-opacity text-zinc-400 hover:text-zinc-200 bg-zinc-900/80 rounded-lg border border-zinc-700"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              </svg>
+            </button>
+          </Tooltip>
         )}
 
         {/* Right sidebar toggle button (when hidden) */}
         {!isRightSidebarOpen && (
-          <button 
-            onClick={() => setIsRightSidebarOpen(true)}
-            className="absolute top-6 right-6 z-40 p-2 hover:opacity-70 transition-opacity text-zinc-400 hover:text-zinc-200 bg-zinc-900/80 rounded-lg border border-zinc-700"
-            title="Show assets panel"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-            </svg>
-          </button>
+          <Tooltip content="Show assets panel">
+            <button 
+              onClick={() => setIsRightSidebarOpen(true)}
+              className="absolute top-6 right-6 z-40 p-2 hover:opacity-70 transition-opacity text-zinc-400 hover:text-zinc-200 bg-zinc-900/80 rounded-lg border border-zinc-700"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+              </svg>
+            </button>
+          </Tooltip>
         )}
 
 
@@ -1409,14 +1526,13 @@ const App: React.FC = () => {
             ))}
           </div>
         </div>
-
       </div>
 
       {/* Right Sidebar: Image Assets */}
       {isRightSidebarOpen && activeTheme && (
         <ImageAssetsSidebar 
           assets={activeTheme.loadedAssets} 
-          themeName={activeTheme.id}
+          themeName={activeTheme.spec.theme_info?.title || activeTheme.id}
           spec={activeTheme.spec}
           onClose={() => setIsRightSidebarOpen(false)}
           onUpdateAsset={handleUpdateAsset}
@@ -1426,6 +1542,7 @@ const App: React.FC = () => {
           currentTheme={activeTheme}
         />
       )}
+      </div>
     </div>
   );
 };

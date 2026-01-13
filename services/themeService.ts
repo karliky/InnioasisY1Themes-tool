@@ -71,18 +71,21 @@ const CONFIG_DESCRIPTIONS: Record<string, string> = {
 
 // Helper to extract all referenced file paths from a theme config
 function extractReferencedFiles(spec: any): Map<string, string> {
-  const fileMap = new Map<string, string>(); // fileName -> configKey
-
+  const fileMap = new Map<string, string[]>(); // fileName -> configKeys[]
+  
   const addIfFile = (value: any, key: string) => {
     if (typeof value === 'string' && value.trim() !== '' && !value.startsWith('#')) {
       // Skip color values
       if (/\.(png|jpg|jpeg|svg|ttf|otf|woff|woff2)$/i.test(value)) {
-        fileMap.set(value, key);
+        if (!fileMap.has(value)) {
+          fileMap.set(value, []);
+        }
+        fileMap.get(value)!.push(key);
       }
     }
   };
 
-  // Top-level paths
+  // Top-level paths (prioritized)
   addIfFile(spec.themeCover, 'themeCover');
   addIfFile(spec.desktopWallpaper, 'desktopWallpaper');
   addIfFile(spec.globalWallpaper, 'globalWallpaper');
@@ -103,7 +106,15 @@ function extractReferencedFiles(spec: any): Map<string, string> {
     }
   }
 
-  return fileMap;
+  // Convert to Map<string, string> by selecting the first (priority) config key
+  const resultMap = new Map<string, string>();
+  for (const [fileName, configKeys] of fileMap.entries()) {
+    // Prioritize top-level properties (wallpapers, covers, masks) over nested configs
+    const topLevelKey = configKeys.find(key => !key.includes('.'));
+    resultMap.set(fileName, topLevelKey || configKeys[0]);
+  }
+  
+  return resultMap;
 }
 
 // Discover all themes in /themes/*/config.json and their assets
@@ -163,6 +174,11 @@ export const loadAvailableThemes = (): LoadedTheme[] => {
     const referencedFiles = extractReferencedFiles(spec);
     const loadedAssets: ThemeAssetInfo[] = [];
     
+    // Debug: Log all referenced files for Aero theme
+    if (id === 'Aero') {
+      console.log(`🔍 Aero - Referenced files from config:`, Array.from(referencedFiles.entries()));
+    }
+    
     for (const [fileName, configKey] of referencedFiles.entries()) {
       const url = assetUrlForFile(fileName);
       if (url) {
@@ -172,6 +188,13 @@ export const loadAvailableThemes = (): LoadedTheme[] => {
           configKey,
           description: CONFIG_DESCRIPTIONS[configKey] || configKey
         });
+      } else if (configKey === 'globalWallpaper' || configKey === 'desktopWallpaper') {
+        // Debug logging for wallpaper assets that couldn't be loaded
+        console.warn(`⚠️ ${id} - Asset not found for ${configKey}: ${fileName}`, {
+          fileName,
+          configKey,
+          themeFolder
+        });
       }
     }
 
@@ -180,6 +203,19 @@ export const loadAvailableThemes = (): LoadedTheme[] => {
 
     const initialViewId = spec.navigation?.initial_view_id ?? 'n/a';
     console.log(`✅ Loaded theme: ${id} (${initialViewId}) - ${loadedAssets.length} assets`);
+    
+    // Debug logging for wallpaper assets
+    const wallpaperAssets = loadedAssets.filter(a => a.configKey.includes('Wallpaper'));
+    console.log(`📸 Wallpaper assets for ${id}:`, wallpaperAssets.map(a => ({ configKey: a.configKey, fileName: a.fileName })));
+    
+    // Check which wallpapers were requested but not found
+    if (spec.desktopWallpaper && !loadedAssets.find(a => a.configKey === 'desktopWallpaper')) {
+      console.warn(`  ⚠️ Missing desktopWallpaper: ${spec.desktopWallpaper}`);
+    }
+    if (spec.globalWallpaper && !loadedAssets.find(a => a.configKey === 'globalWallpaper')) {
+      console.warn(`  ⚠️ Missing globalWallpaper: ${spec.globalWallpaper}`);
+    }
+    
     themes.push({ 
       id, 
       spec, 
@@ -270,15 +306,27 @@ export const loadClonedThemes = async (): Promise<LoadedTheme[]> => {
 // Clone an installed theme to make it editable
 export const cloneTheme = async (sourceTheme: LoadedTheme): Promise<LoadedTheme> => {
   const timestamp = new Date().toISOString();
-  const clonedId = `${sourceTheme.id}_clone_${Date.now()}`;
+  
+  // Get existing clones to generate sequential number
+  const existingThemes = await loadClonedThemes();
+  const cloneNumber = existingThemes.filter(t => t.id.startsWith(`${sourceTheme.id}_clone_`)).length + 1;
+  const clonedId = `${sourceTheme.id}_clone_${cloneNumber}`;
   
   // Deep copy the spec
   const clonedSpec = JSON.parse(JSON.stringify(sourceTheme.spec));
   
-  // Update theme title to indicate it's a clone
-  if (clonedSpec.theme_info) {
-    clonedSpec.theme_info.title = `${clonedSpec.theme_info.title} (Clone)`;
+  // Ensure theme_info exists
+  if (!clonedSpec.theme_info) {
+    clonedSpec.theme_info = {};
   }
+  
+  // Get the original title (from theme_info or fallback to sourceTheme.id)
+  const originalTitle = clonedSpec.theme_info.title || sourceTheme.id;
+  
+  // Update theme title to indicate it's a clone
+  clonedSpec.theme_info.title = cloneNumber > 1 
+    ? `${originalTitle} (${cloneNumber})` 
+    : `${originalTitle} (Clone)`;
   
   // Create asset overrides map (initially using original URLs)
   const assetOverrides: Record<string, string> = {};

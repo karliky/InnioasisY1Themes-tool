@@ -88,7 +88,6 @@ const ClickWheel: React.FC<ClickWheelProps> = ({
         <button 
           onClick={(e) => { e.stopPropagation(); onMenuClick(); }}
           className="absolute top-4 text-slate-400 hover:text-white transition-colors flex flex-col items-center gap-1"
-          title="Menu / Back"
         >
           <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
             <path d="M10 7V4L3 11l7 7v-3h6a4 4 0 0 0 0-8h-6z"/>
@@ -100,7 +99,6 @@ const ClickWheel: React.FC<ClickWheelProps> = ({
         <button 
           onClick={(e) => { e.stopPropagation(); onNextClick(); }}
           className="absolute right-6 text-slate-400 hover:text-white transition-colors"
-          title="Next / Fast Forward"
         >
           <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
             <path d="M16 6h2v12h-2V6zM6 6v12l8.5-6L6 6z"/>
@@ -111,7 +109,6 @@ const ClickWheel: React.FC<ClickWheelProps> = ({
         <button 
           onClick={(e) => { e.stopPropagation(); onPrevClick(); }}
           className="absolute left-6 text-slate-400 hover:text-white transition-colors"
-          title="Previous / Rewind"
         >
           <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
             <path d="M6 6h2v12H6V6zm3.5 6 8.5 6V6l-8.5 6z"/>

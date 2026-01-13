@@ -1,17 +1,367 @@
 import React, { useState, useEffect } from 'react';
 import { useDeviceSimulator } from '../hooks/useDeviceSimulator';
 import { Link } from 'react-router-dom';
-import { LoadedTheme, Song } from '../../types';
+import { LoadedTheme } from '../../types';
 import ThemeDisplay from '../../components/ThemeDisplay';
 import ClickWheel from '../../components/ClickWheel';
 import DeviceShell from '../../components/DeviceShell';
 import { loadAvailableThemes, loadClonedThemes } from '../../services/themeService';
 import { MOCK_SONGS } from '../../constants';
-// Re-using styles from index.css mostly, but adding some specific layout
 
-// Mock Data for Community Themes
-// In a real app, this would be fetched from an API/JSON
+// --- BIOMIMETIC STYLES & INTERFACE ---
+// Speculative Solarpunk / Organism Aesthetic
+const BIO_STYLES = `
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;1,400&family=Space+Grotesk:wght@300;500&display=swap');
 
+:root {
+  --bio-deep: #000000; /* True black for infinity depth */
+  --bio-fluid: rgba(255, 255, 255, 0.03);
+  --bio-accent-1: #2AF598; /* Sharper, cleaner mint */
+  --bio-accent-2: #009EFD; /* Electric yet deep blue */
+  --bio-text: #f5f5f7; /* Apple-esque off-white */
+}
+
+/* Smooth scroll & base */
+.bio-page {
+  font-family: 'Cormorant Garamond', serif;
+  background-color: var(--bio-deep);
+  color: var(--bio-text);
+  height: 100vh; /* Changed from min-height to height */
+  position: relative;
+  overflow-y: auto; /* Enable internal scrolling */
+  overflow-x: hidden;
+  cursor: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='12' cy='12' r='8' stroke='%2300ffaa' stroke-width='1.5' stroke-opacity='0.7'/%3E%3Ccircle cx='12' cy='12' r='2' fill='%2300ffaa'/%3E%3C/svg%3E") 12 12, auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bio-accent-1) var(--bio-deep);
+}
+
+/* Custom Scrollbar for Webkit */
+.bio-page::-webkit-scrollbar {
+  width: 8px;
+}
+.bio-page::-webkit-scrollbar-track {
+  background: var(--bio-deep);
+}
+.bio-page::-webkit-scrollbar-thumb {
+  background-color: var(--bio-accent-1);
+  border-radius: 4px;
+  border: 2px solid var(--bio-deep);
+}
+
+
+/* Background Organism */
+.bio-substrate {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-color: #050505;
+  background-image: 
+    linear-gradient(rgba(42, 245, 152, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(42, 245, 152, 0.03) 1px, transparent 1px),
+    radial-gradient(circle at 50% 0%, rgba(0, 158, 253, 0.15), transparent 70%),
+    radial-gradient(circle at 50% 100%, rgba(138, 43, 226, 0.1), transparent 70%);
+  background-size: 60px 60px, 60px 60px, 100% 100%, 100% 100%;
+  animation: grid-pulse 10s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+.bio-noise {
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.07;
+  mix-blend-mode: screen; /* Visible on black */
+}
+
+@keyframes grid-pulse {
+  0% { background-position: 0 0, 0 0, 50% 0%, 50% 100%; opacity: 0.8; }
+  50% { background-position: 0 0, 0 0, 50% -2%, 50% 102%; opacity: 1; }
+  100% { background-position: 0 0, 0 0, 50% 0%, 50% 100%; opacity: 0.8; }
+}
+
+/* Floating Navigation Cell */
+.bio-nav-cell {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  z-index: 100;
+  padding: 1rem 2rem;
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 4px 30px rgba(0,0,0,0.1);
+}
+
+.bio-nav-cell:hover {
+  background: rgba(255,255,255,0.08);
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(0, 255, 170, 0.1);
+}
+
+.bio-link {
+  color: var(--bio-text);
+  text-decoration: none;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+}
+.bio-link:hover { opacity: 1; }
+
+/* Slime Layout */
+.bio-colony {
+  position: relative;
+  z-index: 10;
+  padding: 8rem 4rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4rem;
+}
+
+/* Individual Cell (Theme Card) */
+.bio-cell {
+  position: relative;
+  width: 280px;
+  height: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.bio-cell:nth-child(2n) {
+  margin-top: 4rem; /* Irregular grid */
+}
+
+.bio-cell:hover {
+  transform: translateY(-10px) scale(1.05);
+  z-index: 20;
+}
+
+/* The Membrane (Card Shape) */
+.bio-membrane {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; /* Organic Blob */
+  box-shadow: 
+    inset 0 0 20px rgba(0,0,0,0.5),
+    0 20px 50px rgba(0,0,0,0.3);
+  transition: all 0.8s ease;
+  overflow: hidden;
+  animation: membrane-breath 8s ease-in-out infinite alternate;
+}
+
+.bio-cell:hover .bio-membrane {
+  border-radius: 50% / 50%;
+  background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+  box-shadow: 0 0 30px rgba(0, 255, 170, 0.15);
+  border-color: rgba(0, 255, 170, 0.3);
+}
+
+@keyframes membrane-breath {
+  0% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+  50% { border-radius: 50% 50% 40% 60% / 50% 40% 50% 50%; }
+  100% { border-radius: 60% 40% 30% 70% / 60% 50% 40% 60%; }
+}
+
+/* Image inside membran */
+.bio-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.6;
+  mix-blend-mode: luminosity;
+  transition: all 0.5s ease;
+  transform: scale(1.1);
+}
+
+.bio-cell:hover .bio-preview-img {
+  opacity: 0.8;
+  mix-blend-mode: normal;
+  transform: scale(1);
+}
+
+/* Nucleus (Content) */
+.bio-nucleus {
+  position: absolute;
+  bottom: 10%;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  padding: 0 1rem;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.4s ease 0.1s;
+}
+
+.bio-cell:hover .bio-nucleus {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.bio-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin-bottom: 0.2rem;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(0,0,0,0.8);
+}
+
+.bio-meta {
+  font-size: 0.8rem;
+  color: #aaa;
+  font-style: italic;
+}
+
+/* Header Typography */
+.bio-hero {
+  text-align: center;
+  padding-top: 8rem;
+  position: relative;
+  z-index: 10;
+}
+
+.bio-hero h1 {
+  font-size: 5rem;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  background: linear-gradient(180deg, #fff, #888);
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: float-text 6s ease-in-out infinite;
+}
+
+.bio-hero p {
+  font-size: 1.2rem;
+  color: rgba(255,255,255,0.5);
+  max-width: 600px;
+  margin: 1rem auto;
+  line-height: 1.6;
+}
+
+@keyframes float-text {
+  0%, 100% { transform: translateY(0); filter: blur(0px); }
+  50% { transform: translateY(-10px); filter: blur(1px); }
+}
+
+/* Modal Portal */
+.bio-portal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.9);
+  backdrop-filter: blur(20px);
+  animation: portal-open 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes portal-open {
+  from { opacity: 0; backdrop-filter: blur(0); }
+  to { opacity: 1; backdrop-filter: blur(20px); }
+}
+
+.bio-portal-content {
+  display: flex;
+  gap: 4rem;
+  align-items: center;
+  width: 90vw;
+  max-width: 1200px;
+  height: 80vh;
+}
+
+.bio-device-sac {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Glow behind device */
+.bio-device-sac::before {
+  content: '';
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(0, 255, 170, 0.2), transparent 70%);
+  filter: blur(40px);
+  animation: pulse-glow 4s infinite alternate;
+}
+
+@keyframes pulse-glow {
+  0% { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(1.2); opacity: 0.8; }
+}
+
+.bio-info-panel {
+  flex: 0 0 350px;
+  color: #fff;
+  font-family: 'Space Grotesk';
+}
+
+.bio-info-title {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: 1rem;
+  color: var(--bio-accent-1);
+}
+
+.bio-close-btn {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  font-size: 2rem;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+.bio-close-btn:hover { color: #fff; }
+
+/* Loading State - Spore Cloud */
+.bio-loading {
+  height: 50vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--bio-accent-1);
+  font-family: 'Space Grotesk';
+  gap: 1rem;
+}
+
+.spore {
+  width: 20px;
+  height: 20px;
+  background: var(--bio-accent-1);
+  border-radius: 50%;
+  animation: spore-ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes spore-ping {
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+
+`;
 
 const GalleryPage: React.FC = () => {
     // State for themes
@@ -22,7 +372,7 @@ const GalleryPage: React.FC = () => {
     const [selectedThemeId, setSelectedThemeId] = useState<string | null>(null);
     const [previewTheme, setPreviewTheme] = useState<LoadedTheme | null>(null);
     const [loadingPreview, setLoadingPreview] = useState(false);
-    const [loadingStatus, setLoadingStatus] = useState<string | null>("Initializing...");
+    const [loadingStatus, setLoadingStatus] = useState<string | null>("Initializing ecosystem...");
 
     // Device Simulator Hook
     const {
@@ -53,19 +403,19 @@ const GalleryPage: React.FC = () => {
         const fetchThemes = async () => {
             try {
                 // Load installed themes
-                setLoadingStatus("Loading installed themes...");
+                setLoadingStatus("Germinating local spores...");
                 const installed = loadAvailableThemes();
 
                 // Load cloned themes
-                setLoadingStatus("Loading cloned from IndexedDB...");
+                setLoadingStatus("Connecting to fungal network...");
                 const cloned = await loadClonedThemes();
 
                 // Combine and set
-                setLoadingStatus("Finalizing...");
+                setLoadingStatus("Synthesizing...");
                 setThemes([...installed, ...cloned]);
             } catch (e) {
                 console.error("Failed to load themes", e);
-                setLoadingStatus(`Error: ${e instanceof Error ? e.message : String(e)}`);
+                setLoadingStatus(`Symbiosis Error: ${e instanceof Error ? e.message : String(e)}`);
             } finally {
                 setLoadingStatus(null);
                 setLoading(false);
@@ -98,218 +448,153 @@ const GalleryPage: React.FC = () => {
     };
 
     return (
-        <div className="h-screen bg-[#1A1612] text-[#E8E3D5] font-sans pb-20 relative overflow-y-auto overflow-x-hidden">
-            {/* Texture Overlay */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'var(--texture-noise)' }}></div>
+        <div className="bio-page">
+            <style>{BIO_STYLES}</style>
 
+            <div className="bio-substrate"></div>
+            <div className="bio-noise"></div>
+
+            {/* Organic Navigation */}
+            <nav className="bio-nav-cell">
+                <div style={{ width: 10, height: 10, background: '#00ffaa', borderRadius: '50%', boxShadow: '0 0 10px #00ffaa' }}></div>
+                <span style={{ fontWeight: 600, letterSpacing: '0.2em' }}>GALLERY</span>
+                <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.2)' }}></div>
+                <Link to="/" className="bio-link">Return to Theme Editor</Link>
+            </nav>
 
             {/* Header */}
-            <header className="relative z-10 border-b border-[#3A3530] bg-[#25201B]/90 backdrop-blur-md sticky top-0">
-                <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-md bg-[#C97D60] flex items-center justify-center text-[#1A1612] font-bold text-xl">
-                            Y1
-                        </div>
-                        <h1 className="text-xl font-medium tracking-wide">Theme Gallery</h1>
-                    </div>
-                    <Link
-                        to="/"
-                        className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#4A4540] hover:border-[#C97D60] hover:text-[#C97D60] transition-colors text-sm font-medium uppercase tracking-wider"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" /></svg>
-                        Back to Editor
-                    </Link>
+            <header className="bio-hero">
+                <h1>Theme Ecosystem</h1>
+                <p>
+                    A community-cultivated ecosystem of Innioasis Y1 themes. Explore the digital art and download unique themes for your MP3 device.
+                </p>
+
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '2rem' }}>
+                    <a href="https://discord.gg/3zbfaTNN7V" target="_blank" rel="noreferrer"
+                        style={{ color: '#00aaff', textDecoration: 'none', borderBottom: '1px dotted #00aaff' }}>
+                        Timmkoo Discord
+                    </a>
+                    <a href="https://github.com/karliky/InnioasisY1Themes-tool" target="_blank" rel="noreferrer"
+                        style={{ color: '#aaa', textDecoration: 'none', borderBottom: '1px dotted #aaa' }}>
+                        Source DNA
+                    </a>
                 </div>
             </header>
 
-            {/* Hero Section */}
-            <section className="relative z-10 py-16 px-6 text-center border-b border-[#3A3530] bg-gradient-to-b from-[#25201B] to-[#1A1612]">
-                <div className="max-w-3xl mx-auto space-y-6">
-                    <h2 className="text-4xl md:text-5xl font-serif text-[#C97D60]">Discover & Share</h2>
-                    <p className="text-lg text-[#8A8578] max-w-2xl mx-auto leading-relaxed">
-                        Explore the best themes created by the Innioasis Y1 community. Customize your device with unique styles, or share your own creations.
-                    </p>
-                    <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-                        <a
-                            href="https://discord.gg/3zbfaTNN7V"
-                            target="_blank"
-                            rel="noreferrer"
-                            className="px-6 py-3 rounded bg-[#5865F2] hover:bg-[#4752C4] text-white font-medium transition-colors flex items-center gap-2"
-                        >
-                            <svg className="w-5 h-5" viewBox="0 0 127.14 96.36" fill="currentColor">
-                                <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.11,77.11,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.82,105.82,0,0,0,126.6,80.22c2.31-23.73-2.1-47.65-18.9-72.15ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z" />
-                            </svg>
-                            Join Discord Community
-                        </a>
-                        <a
-                            href="https://github.com/karliky/InnioasisY1Themes-tool"
-                            target="_blank"
-                            rel="noreferrer"
-                            className="px-6 py-3 rounded bg-[#333] hover:bg-[#444] text-white font-medium transition-colors flex items-center gap-2 border border-[#555]"
-                        >
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
-                            </svg>
-                            Submit Theme on GitHub
-                        </a>
-                    </div>
-                </div>
-            </section>
-
-            {/* Gallery Grid */}
-            <main className="max-w-7xl mx-auto px-6 py-12 relative z-10">
+            {/* Gallery Colony */}
+            <main className="bio-colony">
                 {loadingStatus ? (
-                    <div className="flex flex-col items-center justify-center h-40 space-y-4">
-                        <div className="w-8 h-8 border-2 border-[#C97D60] border-t-transparent rounded-full animate-spin"></div>
-                        <div className="text-[#C97D60] font-mono animate-pulse">{loadingStatus}</div>
+                    <div className="bio-loading">
+                        <div className="spore"></div>
+                        <p>{loadingStatus}</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                        {themes.map((theme) => {
-                            const coverUrl = getThemeCoverUrl(theme);
-                            const title = theme.spec.theme_info?.title || theme.id;
-                            const author = theme.spec.theme_info?.author || 'Unknown Author';
-                            const description = theme.spec.theme_info?.description || 'No description provided.';
+                    themes.map((theme, index) => {
+                        const coverUrl = getThemeCoverUrl(theme);
+                        const title = theme.spec.theme_info?.title || theme.id;
+                        const author = theme.spec.theme_info?.author || 'Unknown';
 
-                            return (
-                                <div key={theme.id} className="group editorial-card bg-[#25201B] flex flex-col transition-transform hover:-translate-y-1">
-                                    <div className="aspect-[4/3] bg-[#000] relative overflow-hidden group-hover:opacity-90 transition-opacity flex items-center justify-center">
-                                        {coverUrl ? (
-                                            <img src={coverUrl} alt={title} className="absolute inset-0 w-full h-full object-cover" onError={(e) => (e.target as HTMLImageElement).style.display = 'none'} />
-                                        ) : (
-                                            <div className="text-[#333] font-bold text-2xl opacity-30">NO PREVIEW</div>
-                                        )}
-
-                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 z-10">
-                                            <button
-                                                onClick={() => handlePreview(theme)}
-                                                className="px-6 py-2 bg-[#C97D60] text-[#1A1612] font-bold uppercase tracking-wider rounded-sm hover:scale-105 transition-transform"
-                                            >
-                                                Preview
-                                            </button>
+                        return (
+                            <div
+                                key={theme.id}
+                                className="bio-cell"
+                                onClick={() => handlePreview(theme)}
+                                style={{ animationDelay: `${index * 0.1}s` }}
+                            >
+                                <div className="bio-membrane">
+                                    {coverUrl ? (
+                                        <img src={coverUrl} alt={title} className="bio-preview-img" />
+                                    ) : (
+                                        <div style={{ width: '100%', height: '100%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333' }}>
+                                            NO SIGNAL
                                         </div>
-                                    </div>
-
-                                    <div className="p-5 flex-1 flex flex-col">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <h3 className="text-lg font-bold text-[#E8E3D5] truncate w-full" title={title}>{title}</h3>
-                                        </div>
-
-                                        <p className="text-sm text-[#8A8578] mb-4 flex-1 line-clamp-2">{description}</p>
-
-                                        <div className="flex items-center justify-between pt-4 border-t border-[#3A3530]">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-6 h-6 rounded-full bg-[#3A3530] flex items-center justify-center text-xs">
-                                                    {author.charAt(0)}
-                                                </div>
-                                                <span className="text-xs text-[#D4A574] truncate max-w-[100px]" title={author}>{author}</span>
-                                            </div>
-                                            {theme.isEditable && (
-                                                <span className="text-xs text-[#6B7A47] font-mono border border-[#6B7A47]/30 px-1.5 py-0.5 rounded">Local</span>
-                                            )}
-                                        </div>
-                                    </div>
+                                    )}
                                 </div>
-                            );
-                        })}
-                    </div>
+                                <div className="bio-nucleus">
+                                    <div className="bio-title">{title}</div>
+                                    <div className="bio-meta">by {author}</div>
+                                </div>
+                            </div>
+                        );
+                    })
                 )}
             </main>
 
-            {/* Preview Modal */}
+            {/* Preview Portal */}
             {selectedThemeId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="relative w-full max-w-5xl h-[90vh] flex flex-col md:flex-row gap-8 items-center justify-center">
+                <div className="bio-portal">
+                    <button onClick={closePreview} className="bio-close-btn">×</button>
 
-                        {/* Close Button */}
-                        <button
-                            onClick={closePreview}
-                            className="absolute top-0 right-0 md:-right-12 p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-colors"
-                        >
-                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
+                    <div className="bio-portal-content">
+                        {/* Device Container */}
+                        <div className="bio-device-sac">
+                            {previewTheme ? (
+                                <div style={{ transform: 'scale(0.8)' }}>
+                                    <DeviceShell
+                                        deviceColor="silver"
+                                        screenContent={
+                                            <ThemeDisplay
+                                                loadedTheme={previewTheme}
+                                                themeViewId={themeViewId}
+                                                themeSelectedIndex={themeSelectedIndex}
+                                                currentSong={currentSong}
+                                                selectedSongIndex={selectedSongIndex}
+                                                batteryLevel={batteryLevel}
+                                                isCharging={isCharging}
+                                                showToast={false}
+                                                onHideToast={() => { }}
+                                                playState={isPlaying ? 'playing' : 'pause'}
+                                                headsetState={null}
+                                                bluetoothState={'connected'}
+                                                ringtoneEnabled={true}
+                                                vibratorEnabled={true}
+                                                elapsedTime={0}
+                                                playbackProgress={0}
+                                                showTimeInTitle={true}
+                                                dialogState={dialogState}
+                                                onDialogSelect={() => { }}
+                                                timedShutdownValue={timedShutdownValue}
+                                                backlightValue={backlightValue}
+                                            />
+                                        }
+                                        clickWheel={
+                                            <ClickWheel
+                                                onScroll={handleScroll}
+                                                onCenterClick={handleCenterClick}
+                                                onMenuClick={handleMenuClick}
+                                                onNextClick={() => { }}
+                                                onPrevClick={() => { }}
+                                                onPlayPauseClick={handlePlayPause}
+                                                size={180}
+                                                isPlaying={isPlaying}
+                                            />
+                                        }
+                                    />
+                                </div>
+                            ) : (
+                                <div>Loading Organism...</div>
+                            )}
+                        </div>
 
-                        {loadingPreview ? (
-                            <div className="text-[#C97D60] font-mono text-xl animate-pulse">
-                                Loading theme simulation...
+                        {/* Info Panel */}
+                        <div className="bio-info-panel hidden md:block">
+                            <h2 className="bio-info-title">{previewTheme?.spec.theme_info?.title}</h2>
+                            <p style={{ color: '#888', marginBottom: '2rem', lineHeight: '1.6' }}>
+                                {previewTheme?.spec.theme_info?.description || 'No genetic data provided for this specimen.'}
+                            </p>
+
+                            <div style={{ paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                                    <span style={{ color: '#666', fontSize: '0.8rem', textTransform: 'uppercase' }}>Author</span>
+                                    <span style={{ color: '#fff' }}>{previewTheme?.spec.theme_info?.author}</span>
+                                </div>
+                                <button className="bio-btn" style={{
+                                    background: 'var(--bio-accent-1)', color: '#000', border: 'none', padding: '1rem 2rem', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Space Grotesk'
+                                }} onClick={() => console.log('Download')}>
+                                    INJECT THEME
+                                </button>
                             </div>
-                        ) : (
-                            <>
-                                {/* Device Simulator */}
-                                <div className="h-full flex items-center justify-center scale-[0.6] md:scale-75 lg:scale-90 origin-center">
-                                    {previewTheme ? (
-                                        <DeviceShell
-                                            deviceColor="silver"
-                                            screenContent={
-                                                <ThemeDisplay
-                                                    loadedTheme={previewTheme}
-                                                    themeViewId={themeViewId}
-                                                    themeSelectedIndex={themeSelectedIndex}
-                                                    currentSong={currentSong}
-                                                    selectedSongIndex={selectedSongIndex}
-                                                    batteryLevel={batteryLevel}
-                                                    isCharging={isCharging}
-                                                    showToast={false}
-                                                    onHideToast={() => { }}
-                                                    playState={isPlaying ? 'playing' : 'pause'}
-                                                    headsetState={null}
-                                                    bluetoothState={'connected'}
-                                                    ringtoneEnabled={true}
-                                                    vibratorEnabled={true}
-                                                    elapsedTime={0}
-                                                    playbackProgress={0}
-                                                    showTimeInTitle={true}
-                                                    dialogState={dialogState}
-                                                    onDialogSelect={() => { }}
-                                                    timedShutdownValue={timedShutdownValue}
-                                                    backlightValue={backlightValue}
-                                                />
-                                            }
-                                            clickWheel={
-                                                <ClickWheel
-                                                    onScroll={handleScroll}
-                                                    onCenterClick={handleCenterClick}
-                                                    onMenuClick={handleMenuClick}
-                                                    onNextClick={() => { }}
-                                                    onPrevClick={() => { }}
-                                                    onPlayPauseClick={handlePlayPause}
-                                                    size={180}
-                                                    isPlaying={isPlaying}
-                                                />
-                                            }
-                                        />
-                                    ) : (
-                                        <div className="text-red-500">Failed to load preview</div>
-                                    )}
-                                </div>
-
-                                {/* Sidebar Info */}
-                                <div className="hidden md:flex flex-col w-80 text-left space-y-6">
-                                    <div>
-                                        <h3 className="text-2xl font-bold text-white mb-2">{previewTheme?.spec.theme_info?.title || previewTheme?.id}</h3>
-                                        <p className="text-[#8A8578]">{previewTheme?.spec.theme_info?.description || 'No description provided.'}</p>
-                                    </div>
-
-                                    <div className="space-y-4 pt-4 border-t border-[#333]">
-                                        <div className="bg-[#222] p-4 rounded border border-[#333]">
-                                            <div className="text-xs text-[#666] uppercase mb-1">Controls</div>
-                                            <ul className="text-sm text-[#AAA] space-y-2">
-                                                <li>• This is a simulation using the default theme structure.</li>
-                                                <li>• Interaction is limited in preview mode.</li>
-                                                <li>• Press play/pause on controls to animate.</li>
-                                            </ul>
-                                        </div>
-
-                                        <button
-                                            onClick={() => window.open('https://github.com/karliky/InnioasisY1Themes-tool', '_blank')}
-                                            className="w-full py-3 bg-[#C97D60] hover:bg-[#B85D3A] text-[#1A1612] font-bold uppercase tracking-wide rounded transition-colors"
-                                        >
-                                            Download Custom Theme
-                                        </button>
-                                    </div>
-                                </div>
-                            </>
-                        )}
+                        </div>
                     </div>
                 </div>
             )}

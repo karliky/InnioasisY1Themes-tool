@@ -212,13 +212,15 @@ export const useDeviceSimulator = ({ activeTheme, initialViewId = 'home' }: UseD
                 const values: Array<'off' | '10' | '20' | '30' | '60' | '90' | '120'> = ['off', '10', '20', '30', '60', '90', '120'];
                 const idx = values.indexOf(timedShutdownValue);
                 setTimedShutdownValue(values[(idx + 1) % values.length]);
-            } else if (selected === 'Backlight') { // Match casing from original
-                // ...
+            } else if (selected === 'Backlight') {
+                const values: Array<'10' | '15' | '30' | '45' | '60' | '120' | '300' | 'always'> = ['10', '15', '30', '45', '60', '120', '300', 'always'];
+                const idx = values.indexOf(backlightValue);
+                setBacklightValue(values[(idx + 1) % values.length]);
             } else {
                 setRequestToast({ message: 'Not Implemented', visible: true });
             }
         }
-    }, [activeTheme, dialogState.visible, themeViewId, themeSelectedIndex, timedShutdownValue, goBack]);
+    }, [activeTheme, dialogState.visible, themeViewId, themeSelectedIndex, timedShutdownValue, backlightValue, goBack]);
 
     const handleMenuClick = useCallback(() => {
         goBack();

@@ -168,20 +168,35 @@ const DeviceShell: React.FC<DeviceShellProps> = ({ deviceColor, scale = 1, scree
 
             <div
                 ref={screenRef}
-                className="bg-black rounded-lg flex-shrink-0 relative"
+                className="bg-black flex-shrink-0 relative"
                 style={{
-                    padding: '0',
+                    padding: '8px',
                     border: 'none',
+                    borderRadius: '12px',
                     boxShadow: `
                   0 0 40px rgba(0, 0, 0, 0.8),
                   inset 0 2px 4px rgba(255, 255, 255, 0.1),
                   inset 0 -2px 4px rgba(0, 0, 0, 0.3)
                 `,
-                    position: 'relative'
+                    position: 'relative',
+                    overflow: 'hidden'
                 }}
             >
+                {/* Inner screen frame/bezel */}
+                <div
+                    style={{
+                        position: 'absolute',
+                        inset: '8px',
+                        border: '1px solid rgb(63, 63, 63)',
+                        borderRadius: '8px',
+                        pointerEvents: 'none',
+                        zIndex: 1
+                    }}
+                />
                 {/* Screen content */}
-                {screenContent}
+                <div style={{ position: 'relative', zIndex: 0, width: '100%', height: '100%' }}>
+                    {screenContent}
+                </div>
             </div>
 
             <div className="flex-1 flex flex-col items-center justify-center w-full min-h-0" style={{ '--screen-height': `${screenHeight}px` } as React.CSSProperties & { '--screen-height': string }}>

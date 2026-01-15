@@ -7,6 +7,7 @@ import DeviceShell, { METALLIC_COLORS } from '../../components/DeviceShell';
 import ImageAssetsSidebar from '../../components/ImageAssetsSidebar';
 import MenuBar from '../../components/MenuBar';
 import ThemeTabs from '../../components/ThemeTabs';
+import TutorialModal from '../../components/TutorialModal';
 import { Tooltip } from '../../components/Tooltip';
 import { Song, LoadedTheme, ThemeAssetInfo } from '../../types';
 import { MOCK_SONGS } from '../../constants';
@@ -142,6 +143,7 @@ const EditorPage: React.FC = () => {
   const [ringtoneEnabled, setRingtoneEnabled] = useState(false);
   const [vibratorEnabled, setVibratorEnabled] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   // Backlight value setter for settings menu interaction if needed outside hook (hook manages it internally)
   // We might need to expose setBacklightValue from hook if we want to change it from menu bar or similar? 
@@ -393,6 +395,38 @@ const EditorPage: React.FC = () => {
     };
 
     loadThemes();
+  }, []);
+
+  // Check if tutorial should be shown on first visit
+  useEffect(() => {
+    if (!isLoading) {
+      try {
+        const tutorialSeen = localStorage.getItem('tutorialSeen');
+        if (!tutorialSeen) {
+          setShowTutorial(true);
+        }
+      } catch (e) {
+        console.warn('Failed to check tutorial status:', e);
+      }
+    }
+  }, [isLoading]);
+
+  const handleTutorialClose = useCallback(() => {
+    setShowTutorial(false);
+    try {
+      localStorage.setItem('tutorialSeen', 'true');
+    } catch (e) {
+      console.warn('Failed to save tutorial status:', e);
+    }
+  }, []);
+
+  const handleTutorialSkip = useCallback(() => {
+    setShowTutorial(false);
+    try {
+      localStorage.setItem('tutorialSeen', 'true');
+    } catch (e) {
+      console.warn('Failed to save tutorial status:', e);
+    }
   }, []);
 
   // Playback timer effect
@@ -650,6 +684,13 @@ const EditorPage: React.FC = () => {
 
   return (
     <div className="w-screen h-screen flex flex-col bg-black text-white font-mono overflow-hidden">
+      {/* Tutorial Modal */}
+      <TutorialModal
+        visible={showTutorial}
+        onClose={handleTutorialClose}
+        onSkip={handleTutorialSkip}
+      />
+
       {/* Global Menu Bar */}
       <MenuBar
         activeTheme={activeTheme}
@@ -725,23 +766,23 @@ const EditorPage: React.FC = () => {
           <div className="w-80 border-r border-[#3A3A3A] bg-[#2D2D2D] flex flex-col z-30 overflow-y-auto relative editorial-sidebar" style={{ boxShadow: '2px 0 8px rgba(0,0,0,0.5)' }}>
             <div className="flex-1 overflow-y-auto p-6 space-y-10 no-scrollbar relative z-10">
               {/* Device Status Section */}
-              <section className="space-y-4 editorial-section">
-                <h3 className="text-[11px] font-bold text-[#C0C0C0] uppercase tracking-[0.15em] border-b border-[#3C7FD5] pb-2 flex items-center gap-2" style={{ fontFamily: 'var(--font-mono)' }}>
+              <section className="space-y-2 editorial-section">
+                <h3 className="text-[11px] font-bold text-[#C0C0C0] uppercase tracking-[0.15em] border-b border-[#3C7FD5] pb-1 flex items-center gap-2" style={{ fontFamily: 'var(--font-mono)' }}>
                   <svg className="w-4 h-4 text-[#3C7FD5]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   Device Status
                 </h3>
-                <div className="space-y-4 pl-2">
+                <div className="space-y-2 pl-2">
                   {/* Battery Level */}
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <label className="text-[10px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Battery Level</label>
                     <div className="flex gap-2">
                       {[0, 1, 2, 3].map((level) => (
                         <button
                           key={level}
                           onClick={() => setBatteryLevel(level)}
-                          className={`flex-1 py-2 px-3 text-center text-[10px] font-bold uppercase transition-all border rounded-sm ${batteryLevel === level
+                          className={`flex-1 py-1.5 px-2 text-center text-[10px] font-bold uppercase transition-all border rounded-sm ${batteryLevel === level
                             ? 'bg-[#3C7FD5] border-[#5A9FFF] text-white'
                             : 'bg-[#3A3A3A] border-[#4A4A4A] text-[#AAAAAA] hover:border-[#5A9FFF]'
                             }`}
@@ -754,7 +795,7 @@ const EditorPage: React.FC = () => {
                   </div>
 
                   {/* Charging Toggle */}
-                  <div className="space-y-2">
+                  <div className="space-y-0">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
@@ -767,7 +808,7 @@ const EditorPage: React.FC = () => {
                   </div>
 
                   {/* Time in Title Toggle */}
-                  <div className="space-y-2">
+                  <div className="space-y-0">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
@@ -777,11 +818,11 @@ const EditorPage: React.FC = () => {
                       />
                       <span className="text-[10px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Time in Title</span>
                     </label>
-                    <p className="text-[9px] text-[#777777] ml-6 italic" style={{ fontFamily: 'var(--font-body)' }}>Show hh:mm in Home status bar</p>
+                    <p className="text-[9px] text-[#777777] ml-6 italic -mt-0.5" style={{ fontFamily: 'var(--font-body)' }}>Show hh:mm in Home status bar</p>
                   </div>
 
                   {/* Play State */}
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <label className="text-[10px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Play State</label>
                     <select
                       value={playState || ''}
@@ -790,7 +831,7 @@ const EditorPage: React.FC = () => {
                         setPlayState(newState);
                         setIsPlaying(newState === 'playing' || newState === 'fmPlaying' || newState === 'audiobookPlaying');
                       }}
-                      className="w-full bg-[#3A3A3A] border border-[#4A4A4A] px-3 py-2 text-xs text-[#CCCCCC] font-medium focus:outline-none focus:ring-2 focus:ring-[#3C7FD5] focus:border-[#3C7FD5]"
+                      className="w-full bg-[#3A3A3A] border border-[#4A4A4A] px-3 py-1.5 text-xs text-[#CCCCCC] font-medium focus:outline-none focus:ring-2 focus:ring-[#3C7FD5] focus:border-[#3C7FD5]"
                       style={{ fontFamily: 'var(--font-body)' }}
                     >
                       <option value="">None</option>
@@ -803,12 +844,12 @@ const EditorPage: React.FC = () => {
                   </div>
 
                   {/* Headset State */}
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <label className="text-[10px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Headset</label>
                     <select
                       value={headsetState || ''}
                       onChange={e => setHeadsetState(e.target.value ? (e.target.value as typeof headsetState) : null)}
-                      className="w-full bg-[#3A3A3A] border border-[#4A4A4A] px-3 py-2 text-xs text-[#CCCCCC] font-medium focus:outline-none focus:ring-2 focus:ring-[#3C7FD5] focus:border-[#3C7FD5]"
+                      className="w-full bg-[#3A3A3A] border border-[#4A4A4A] px-3 py-1.5 text-xs text-[#CCCCCC] font-medium focus:outline-none focus:ring-2 focus:ring-[#3C7FD5] focus:border-[#3C7FD5]"
                       style={{ fontFamily: 'var(--font-body)' }}
                     >
                       <option value="">None</option>
@@ -818,12 +859,12 @@ const EditorPage: React.FC = () => {
                   </div>
 
                   {/* Bluetooth State */}
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <label className="text-[10px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Bluetooth</label>
                     <select
                       value={bluetoothState || ''}
                       onChange={e => setBluetoothState(e.target.value ? (e.target.value as typeof bluetoothState) : null)}
-                      className="w-full bg-[#3A3A3A] border border-[#4A4A4A] px-3 py-2 text-xs text-[#CCCCCC] font-medium focus:outline-none focus:ring-2 focus:ring-[#3C7FD5] focus:border-[#3C7FD5]"
+                      className="w-full bg-[#3A3A3A] border border-[#4A4A4A] px-3 py-1.5 text-xs text-[#CCCCCC] font-medium focus:outline-none focus:ring-2 focus:ring-[#3C7FD5] focus:border-[#3C7FD5]"
                       style={{ fontFamily: 'var(--font-body)' }}
                     >
                       <option value="">None</option>
@@ -834,7 +875,7 @@ const EditorPage: React.FC = () => {
                   </div>
 
                   {/* Ringtone Toggle */}
-                  <div className="space-y-2">
+                  <div className="space-y-0">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
@@ -847,7 +888,7 @@ const EditorPage: React.FC = () => {
                   </div>
 
                   {/* Vibrator Toggle */}
-                  <div className="space-y-2">
+                  <div className="space-y-0">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"

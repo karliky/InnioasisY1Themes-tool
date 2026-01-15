@@ -118,7 +118,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
                 disabled={!activeTheme}
                 onClick={() => { onExportTheme('zip'); closeMenu(); }}
               >
-                Export Theme as ZIP <span className="shortcut">⌘E</span>
+                Export Theme as ZIP
               </button>
             </div>
           )}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import deviceImage from '../res/tutorial/device.png?url';
 import exportImage from '../res/tutorial/export.png?url';
+import navigateVideo from '../res/tutorial/navigate.mov?url';
 import copypasteVideo from '../res/tutorial/copypaste.mov?url';
 
 interface TutorialStep {
@@ -22,8 +22,8 @@ const TutorialModal: React.FC<TutorialModalProps> = ({ visible, onClose, onSkip 
 
   const steps: TutorialStep[] = [
     {
-      type: 'image',
-      content: deviceImage,
+      type: 'video',
+      content: navigateVideo,
       title: 'Navigate with the Click Wheel',
       description: 'Use the <strong>click wheel</strong> to scroll through menus, press the <strong>center button</strong> to select, and the <strong>top button</strong> to go back.'
     },
@@ -52,14 +52,14 @@ const TutorialModal: React.FC<TutorialModalProps> = ({ visible, onClose, onSkip 
   useEffect(() => {
     if (!visible) return;
     
-    if (currentStep === 1 && videoRef.current) {
-      // Autoplay video on step 2
+    if ((currentStep === 0 || currentStep === 1) && videoRef.current) {
+      // Autoplay video on step 1 or 2
       videoRef.current.currentTime = 0; // Reset to start
       videoRef.current.play().catch(err => {
         console.warn('Video autoplay failed:', err);
       });
     } else if (videoRef.current) {
-      // Pause video when leaving step 2
+      // Pause video when leaving video steps
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
     }
@@ -173,7 +173,15 @@ const TutorialModal: React.FC<TutorialModalProps> = ({ visible, onClose, onSkip 
               <video
                 ref={videoRef}
                 src={currentStepData.content}
-                className="max-w-full max-h-full object-contain"
+                className={`${
+                  currentStep === 0
+                    ? 'w-full h-auto block'
+                    : 'max-w-full max-h-full object-contain'
+                }`}
+                style={currentStep === 0 ? { 
+                  objectFit: 'contain',
+                  maxHeight: 'calc(95vh - 240px)'
+                } : undefined}
                 autoPlay
                 loop
                 muted

@@ -7,6 +7,7 @@ import ClickWheel from '../../components/ClickWheel';
 import DeviceShell from '../../components/DeviceShell';
 import { loadAvailableThemes, loadClonedThemes } from '../../services/themeService';
 import { MOCK_SONGS } from '../../constants';
+import { downloadTheme } from '../../utils/themeExport';
 
 // --- BIOMIMETIC STYLES & INTERFACE ---
 // Speculative Solarpunk / Organism Aesthetic
@@ -637,7 +638,15 @@ const GalleryPage: React.FC = () => {
                                 </div>
                                 <button className="bio-btn" style={{
                                     background: 'var(--bio-accent-1)', color: '#000', border: 'none', padding: '1rem 2rem', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Space Grotesk'
-                                }} onClick={() => console.log('Download')}>
+                                }} onClick={async () => {
+                                    if (!previewTheme) return;
+                                    try {
+                                        await downloadTheme(previewTheme);
+                                    } catch (error: any) {
+                                        console.error('Failed to download theme:', error);
+                                        alert(error.message || 'Failed to download theme');
+                                    }
+                                }}>
                                     DOWNLOAD THEME AS ZIP
                                 </button>
                             </div>

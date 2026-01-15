@@ -118,7 +118,7 @@ const TutorialModal: React.FC<TutorialModalProps> = ({ visible, onClose, onSkip 
             </div>
             <div>
               <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'var(--font-mono)' }}>
-                Welcome to Theme Editor
+                Welcome to Innioasis Y1 Theme Editor
               </h2>
               <p className="text-xs text-[#999999]" style={{ fontFamily: 'var(--font-body)' }}>
                 Step {currentStep + 1} of {totalSteps}

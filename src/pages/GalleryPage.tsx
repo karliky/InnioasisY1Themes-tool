@@ -489,6 +489,24 @@ const GalleryPage: React.FC = () => {
                     >
                         Join Discord Community
                     </a>
+                    <a href="https://www.reddit.com/r/innioasis/" target="_blank" rel="noreferrer"
+                        style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                            padding: '0.8rem 1.5rem',
+                            background: 'rgba(255, 69, 0, 0.1)',
+                            border: '1px solid rgba(255, 69, 0, 0.3)',
+                            borderRadius: '30px',
+                            color: '#ff4500',
+                            textDecoration: 'none',
+                            fontSize: '0.9rem',
+                            fontWeight: 500,
+                            cursor: 'pointer'
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255, 69, 0, 0.2)'}
+                        onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255, 69, 0, 0.1)'}
+                    >
+                        Join Reddit Community
+                    </a>
                     <a href="https://github.com/karliky/InnioasisY1Themes-tool" target="_blank" rel="noreferrer"
                         style={{
                             display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
@@ -620,7 +638,7 @@ const GalleryPage: React.FC = () => {
                                 <button className="bio-btn" style={{
                                     background: 'var(--bio-accent-1)', color: '#000', border: 'none', padding: '1rem 2rem', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Space Grotesk'
                                 }} onClick={() => console.log('Download')}>
-                                    INJECT THEME
+                                    DOWNLOAD THEME AS ZIP
                                 </button>
                             </div>
                         </div>

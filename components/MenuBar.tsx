@@ -274,7 +274,9 @@ const MenuBar: React.FC<MenuBarProps> = ({
               <div className="text-xs text-[#CCCCCC] mt-2">
                 <span>Join the </span>
                 <a href="https://discord.gg/3zbfaTNN7V" target="_blank" rel="noopener noreferrer" className="text-[#3C7FD5] underline">Timmkoo Modders Discord</a>
-                <span> and head to the <span className="font-bold text-[#3C7FD5]">#themes</span> channel!</span>
+                <span> and head to the <span className="font-bold text-[#3C7FD5]">#themes</span> channel, or visit </span>
+                <a href="https://www.reddit.com/r/innioasis/" target="_blank" rel="noopener noreferrer" className="text-[#3C7FD5] underline">r/innioasis</a>
+                <span> on Reddit!</span>
               </div>
             </div>
 
@@ -396,7 +398,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h3 className="text-xl font-bold text-[#FFFFFF]" style={{ fontFamily: 'var(--font-body)' }}>Join the Timmkoo Modders Discord!</h3>
-                <p className="text-[10px] text-[#888888] mt-1" style={{ fontFamily: 'var(--font-mono)' }}>We'd love your feedback and ideas. Join the <a href="https://discord.gg/3zbfaTNN7V" target="_blank" rel="noopener noreferrer" className="text-[#3C7FD5] underline">Timmkoo Modders Discord</a> and head to the <span className="font-bold text-[#3C7FD5]">#themes</span> channel!</p>
+                <p className="text-[10px] text-[#888888] mt-1" style={{ fontFamily: 'var(--font-mono)' }}>We'd love your feedback and ideas. Join the <a href="https://discord.gg/3zbfaTNN7V" target="_blank" rel="noopener noreferrer" className="text-[#3C7FD5] underline">Timmkoo Modders Discord</a> and head to the <span className="font-bold text-[#3C7FD5]">#themes</span> channel, or visit <a href="https://www.reddit.com/r/innioasis/" target="_blank" rel="noopener noreferrer" className="text-[#3C7FD5] underline">r/innioasis</a> on Reddit!</p>
               </div>
               <button
                 onClick={() => setShowFeedbackModal(false)}

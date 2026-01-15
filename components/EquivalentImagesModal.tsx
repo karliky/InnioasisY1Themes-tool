@@ -230,7 +230,7 @@ const EquivalentImagesModal: React.FC<EquivalentImagesModalProps> = ({
               </p>
               <p style={{ fontSize: 12, opacity: 0.7 }}>
                 {currentImageConfigKey
-                  ? `No other themes have a "${currentImageConfigKey}" asset`
+                  ? `No other themes have an "${currentImageConfigKey}" asset`
                   : 'Could not determine asset type'}
               </p>
             </div>

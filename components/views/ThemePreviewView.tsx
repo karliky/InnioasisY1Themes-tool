@@ -38,7 +38,7 @@ const ThemePreviewView: React.FC<ThemePreviewViewProps> = ({
           </div>
         ) : (
           <div style={{ color: colors.text_primary, opacity: 0.8, fontSize: 18 }}>
-            Theme image not provided in settingConfig.theme
+            No theme image provided in settingConfig.theme
           </div>
         )}
       </div>

@@ -525,7 +525,7 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
                         </div>
                         {hasAlpha && (
                           <p className="text-[10px] text-[#C97D60] mt-1" style={{ fontFamily: 'var(--font-mono)' }}>
-                            Alpha channel detected; color picker shows RGB only.
+                            Alpha channel detected. Color picker shows RGB values only.
                           </p>
                         )}
                       </div>

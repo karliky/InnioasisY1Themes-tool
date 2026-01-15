@@ -628,7 +628,7 @@ const GalleryPage: React.FC = () => {
                         <div className="bio-info-panel hidden md:block">
                             <h2 className="bio-info-title">{previewTheme?.spec.theme_info?.title}</h2>
                             <p style={{ color: '#888', marginBottom: '2rem', lineHeight: '1.6' }}>
-                                {previewTheme?.spec.theme_info?.description || 'No genetic data provided for this specimen.'}
+                                {previewTheme?.spec.theme_info?.description || 'No description provided for this theme.'}
                             </p>
 
                             <div style={{ paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>

@@ -187,8 +187,6 @@ const DeviceShell: React.FC<DeviceShellProps> = ({ deviceColor, scale = 1, scree
                     style={{
                         position: 'absolute',
                         inset: '8px',
-                        border: '1px solid rgb(63, 63, 63)',
-                        borderRadius: '8px',
                         pointerEvents: 'none',
                         zIndex: 1
                     }}

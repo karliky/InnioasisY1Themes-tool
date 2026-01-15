@@ -713,6 +713,7 @@ const EditorPage: React.FC = () => {
         onCloneCurrentTheme={handleCloneCurrentTheme}
         onRevertTheme={handleRevertTheme}
         onShowPreferences={() => setShowPreferences(true)}
+        onShowTutorial={() => setShowTutorial(true)}
         onSearchAssetSelect={handleSearchAssetSelect}
       />
 

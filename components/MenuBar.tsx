@@ -25,6 +25,7 @@ interface MenuBarProps {
   onCloneCurrentTheme: () => Promise<LoadedTheme | null>;
   onRevertTheme: () => Promise<void>;
   onShowPreferences: () => void;
+  onShowTutorial?: () => void;
   onSearchAssetSelect?: (asset: { type: 'image' | 'color' | 'metadata'; id: string; configKey?: string }) => void;
 }
 
@@ -51,6 +52,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
   onCloneCurrentTheme,
   onRevertTheme,
   onShowPreferences,
+  onShowTutorial,
   onSearchAssetSelect,
 }) => {
   const navigate = useNavigate();
@@ -186,6 +188,14 @@ const MenuBar: React.FC<MenuBarProps> = ({
           </button>
           {activeMenu === 'help' && (
             <div className="menu-dropdown">
+              {onShowTutorial && (
+                <>
+                  <button className="menu-option" onClick={() => { onShowTutorial(); closeMenu(); }}>
+                    Show Tutorial
+                  </button>
+                  <div className="menu-divider" />
+                </>
+              )}
               <a
                 href="https://github.com/karliky/InnioasisY1Themes-tool/blob/main/README.md"
                 target="_blank"

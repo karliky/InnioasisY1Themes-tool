@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 
 export const METALLIC_COLORS: Record<string, {
     base: string;
@@ -66,6 +66,31 @@ interface DeviceShellProps {
 }
 
 const DeviceShell: React.FC<DeviceShellProps> = ({ deviceColor, scale = 1, screenContent, clickWheel }) => {
+    const screenRef = useRef<HTMLDivElement>(null);
+    const [screenHeight, setScreenHeight] = useState<number>(240);
+
+    useEffect(() => {
+        const updateScreenHeight = () => {
+            if (screenRef.current) {
+                setScreenHeight(screenRef.current.offsetHeight);
+            }
+        };
+
+        updateScreenHeight();
+        window.addEventListener('resize', updateScreenHeight);
+        
+        // Use ResizeObserver for more accurate measurements
+        const resizeObserver = new ResizeObserver(updateScreenHeight);
+        if (screenRef.current) {
+            resizeObserver.observe(screenRef.current);
+        }
+
+        return () => {
+            window.removeEventListener('resize', updateScreenHeight);
+            resizeObserver.disconnect();
+        };
+    }, [screenContent]);
+
     return (
         <div
             className="device-shadow rounded-3xl border-6 flex flex-col items-center justify-start pt-6 ring-1 ring-white/10 overflow-hidden relative"
@@ -84,8 +109,9 @@ const DeviceShell: React.FC<DeviceShellProps> = ({ deviceColor, scale = 1, scree
                 inset 0 2px 4px ${METALLIC_COLORS[deviceColor].highlight},
                 inset 0 -2px 4px ${METALLIC_COLORS[deviceColor].shadow}
               `,
-                position: 'relative'
-            }}
+                position: 'relative',
+                '--screen-height': `${screenHeight}px`
+            } as React.CSSProperties & { '--screen-height': string }}
         >
             {/* Metallic shine overlay */}
             <div
@@ -141,12 +167,12 @@ const DeviceShell: React.FC<DeviceShellProps> = ({ deviceColor, scale = 1, scree
             />
 
             <div
+                ref={screenRef}
                 className="bg-black rounded-lg flex-shrink-0 relative"
                 style={{
-                    padding: '16px',
-                    border: `4px solid ${METALLIC_COLORS[deviceColor].border}`,
+                    padding: '0',
+                    border: 'none',
                     boxShadow: `
-                  0 0 0 1px ${METALLIC_COLORS[deviceColor].shadow} inset,
                   0 0 40px rgba(0, 0, 0, 0.8),
                   inset 0 2px 4px rgba(255, 255, 255, 0.1),
                   inset 0 -2px 4px rgba(0, 0, 0, 0.3)
@@ -154,20 +180,11 @@ const DeviceShell: React.FC<DeviceShellProps> = ({ deviceColor, scale = 1, scree
                     position: 'relative'
                 }}
             >
-                {/* Screen bezel highlight */}
-                <div
-                    className="absolute inset-0 rounded-lg pointer-events-none"
-                    style={{
-                        border: `1px solid ${METALLIC_COLORS[deviceColor].highlight}`,
-                        opacity: 0.3,
-                        borderRadius: '0.5rem'
-                    }}
-                />
                 {/* Screen content */}
                 {screenContent}
             </div>
 
-            <div className="flex-1 flex flex-col items-center justify-center w-full min-h-0">
+            <div className="flex-1 flex flex-col items-center justify-center w-full min-h-0" style={{ '--screen-height': `${screenHeight}px` } as React.CSSProperties & { '--screen-height': string }}>
                 {clickWheel}
             </div>
         </div>

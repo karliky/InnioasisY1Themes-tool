@@ -110,7 +110,7 @@ export const useDeviceSimulator = ({ activeTheme, initialViewId = 'home' }: UseD
                 return Math.max(prev - 1, 0);
             });
         } else if (themeViewId === 'settings') {
-            const settingsMenuItems = ['Shutdown', 'Timed shutdown', 'Shuffle', 'Repeat', 'Equalizer', 'File extension', 'Key lock', 'Key tone', 'Key vibration', 'Wallpaper', 'Brightness', 'Display battery', 'Date & Time', 'Theme', 'Language', 'Factory reset', 'Clear cache', 'About'];
+            const settingsMenuItems = ['Shutdown', 'Timed shutdown', 'Shuffle', 'Repeat', 'Equalizer', 'File extension', 'Key lock', 'Key tone', 'Key vibration', 'Wallpaper', 'Backlight', 'Brightness', 'Display battery', 'Date & Time', 'Theme', 'Language', 'Factory reset', 'Clear cache', 'About'];
             setThemeSelectedIndex(prev => {
                 if (direction === 'down') return Math.min(prev + 1, settingsMenuItems.length - 1);
                 return Math.max(prev - 1, 0);
@@ -189,7 +189,7 @@ export const useDeviceSimulator = ({ activeTheme, initialViewId = 'home' }: UseD
                 setRequestToast({ message: 'Not Implemented', visible: true });
             }
         } else if (themeViewId === 'settings') {
-            const settingsMenuItems = ['Shutdown', 'Timed shutdown', 'Shuffle', 'Repeat', 'Equalizer', 'File extension', 'Key lock', 'Key tone', 'Key vibration', 'Wallpaper', 'Brightness', 'Display battery', 'Date & Time', 'Theme', 'Language', 'Factory reset', 'Clear cache', 'About'];
+            const settingsMenuItems = ['Shutdown', 'Timed shutdown', 'Shuffle', 'Repeat', 'Equalizer', 'File extension', 'Key lock', 'Key tone', 'Key vibration', 'Wallpaper', 'Backlight', 'Brightness', 'Display battery', 'Date & Time', 'Theme', 'Language', 'Factory reset', 'Clear cache', 'About'];
             const selected = settingsMenuItems[themeSelectedIndex];
 
             if (selected === 'Theme') {

@@ -45,8 +45,23 @@ const MenuList: React.FC<MenuListProps> = ({
   const itemGap = 0;
   const actualRowWidth = fullWidth ? 480 : rowWidth; // Full width if requested
   const visibleHeight = itemsPerPage * (itemHeight + itemGap);
-  const targetY = selectedIndex * (itemHeight + itemGap) - (itemsPerPage / 2) * (itemHeight + itemGap);
-  const maxScroll = Math.max(0, items.length * (itemHeight + itemGap) - visibleHeight);
+  const totalHeight = items.length * (itemHeight + itemGap);
+  const maxScroll = Math.max(0, totalHeight - visibleHeight);
+  
+  // Calculate target scroll position to center the selected item
+  const centerOffset = (itemsPerPage / 2) * (itemHeight + itemGap);
+  let targetY = selectedIndex * (itemHeight + itemGap) - centerOffset;
+  
+  // For items near the end of the list, ensure we scroll to show all remaining items
+  const itemsFromEnd = items.length - 1 - selectedIndex;
+  if (itemsFromEnd < Math.floor(itemsPerPage / 2)) {
+    // If we're within the last half-page of items, scroll to the bottom
+    targetY = maxScroll;
+  } else {
+    // Otherwise, try to center the item
+    targetY = Math.max(0, targetY);
+  }
+  
   const scrollOffset = Math.max(0, Math.min(targetY, maxScroll));
 
   return (

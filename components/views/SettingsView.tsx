@@ -46,7 +46,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({
   const isAbout = selected?.id === 'about';
   
   // State text comes from the item's valueText (which comes from refreshConfig in the real app)
-  const stateText = selected?.valueText;
+  // About doesn't show state text in the right panel (uses AboutView instead)
+  const stateText = isAbout ? undefined : selected?.valueText;
   
   // Selected text color: use itemConfig.itemSelectedTextColor if available,
   // otherwise fallback to #3CFFDE (default passed by adapter, overridden by ThemeManager)
@@ -143,19 +144,52 @@ const SettingsView: React.FC<SettingsViewProps> = ({
           alignItems: 'center',
           justifyContent: 'flex-start'
         }}>
-          {/* AboutView special case - hidden for now, would show bzt_view */}
+          {/* AboutView special case - shows bzt_view (140dp square) + two info text fields */}
           {isAbout ? (
             <div style={{
               width: '100%',
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
-              justifyContent: 'center',
-              color: '#ffffff',
-              fontSize: 14,
-              textAlign: 'center',
-              padding: 10
+              justifyContent: 'center'
             }}>
-              About information would be displayed here
+              {/* AboutView - 140dp square */}
+              <div style={{
+                width: 140,
+                height: 140,
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                borderRadius: 8,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 20,
+                border: '2px solid rgba(255, 255, 255, 0.3)'
+              }}>
+                <div style={{
+                  color: '#ffffff',
+                  fontSize: 48,
+                  fontWeight: 'bold'
+                }}>
+                  Y1
+                </div>
+              </div>
+              {/* Two info text fields */}
+              <div style={{
+                color: '#ffffff',
+                fontSize: 16,
+                textAlign: 'center',
+                marginBottom: 10
+              }}>
+                Version 3.0.2
+              </div>
+              <div style={{
+                color: '#ffffff',
+                fontSize: 14,
+                textAlign: 'center',
+                opacity: 0.8
+              }}>
+                Innioasis Y1
+              </div>
             </div>
           ) : iconUrl ? (
             <img 

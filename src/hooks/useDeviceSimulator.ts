@@ -20,6 +20,16 @@ export const useDeviceSimulator = ({ activeTheme, initialViewId = 'home' }: UseD
     // Settings states
     const [timedShutdownValue, setTimedShutdownValue] = useState<'off' | '10' | '20' | '30' | '60' | '90' | '120'>('off');
     const [backlightValue, setBacklightValue] = useState<'10' | '15' | '30' | '45' | '60' | '120' | '300' | 'always'>('10');
+    
+    // Toggle states
+    const [shuffleEnabled, setShuffleEnabled] = useState(false);
+    const [repeatMode, setRepeatMode] = useState<'off' | 'all' | 'one'>('off');
+    const [fileExtensionsEnabled, setFileExtensionsEnabled] = useState(false);
+    const [keyLockEnabled, setKeyLockEnabled] = useState(false);
+    const [keyToneEnabled, setKeyToneEnabled] = useState(true);
+    const [keyVibrationEnabled, setKeyVibrationEnabled] = useState(true);
+    const [displayBatteryEnabled, setDisplayBatteryEnabled] = useState(true);
+    const [brightnessLevel, setBrightnessLevel] = useState(50); // 0-100
 
     // Dialog state
     const [dialogState, setDialogState] = useState<{
@@ -121,9 +131,16 @@ export const useDeviceSimulator = ({ activeTheme, initialViewId = 'home' }: UseD
                 if (direction === 'down') return Math.min(prev + 1, equalizerMenuItems.length - 1);
                 return Math.max(prev - 1, 0);
             });
+        } else if (themeViewId === 'settingsBrightness') {
+            // Left/right (antiClockwise/clockwise) adjusts brightness by 10 (0-100 range)
+            if (direction === 'down') {
+                setBrightnessLevel(prev => Math.min(prev + 10, 100));
+            } else {
+                setBrightnessLevel(prev => Math.max(prev - 10, 0));
+            }
         }
         // Add more views as needed
-    }, [activeTheme, dialogState.visible, dialogState.options.length, themeViewId]);
+    }, [activeTheme, dialogState.visible, dialogState.options.length, themeViewId, setBrightnessLevel]);
 
     const handleCenterClick = useCallback(() => {
         if (dialogState.visible) {
@@ -189,7 +206,7 @@ export const useDeviceSimulator = ({ activeTheme, initialViewId = 'home' }: UseD
                 setRequestToast({ message: 'Not Implemented', visible: true });
             }
         } else if (themeViewId === 'settings') {
-            const settingsMenuItems = ['Shutdown', 'Timed shutdown', 'Shuffle', 'Repeat', 'Equalizer', 'File extension', 'Key lock', 'Key tone', 'Key vibration', 'Wallpaper', 'Backlight', 'Brightness', 'Display battery', 'Date & Time', 'Theme', 'Language', 'Factory reset', 'Clear cache', 'About'];
+            const settingsMenuItems = ['Shutdown', 'Timed shutdown', 'Shuffle', 'Repeat', 'Equalizer', 'File extensions', 'Key lock', 'Key tone', 'Key vibration', 'Wallpaper', 'Backlight', 'Brightness', 'Display battery', 'Date & Time', 'Theme', 'Language', 'Factory reset', 'Clear cache', 'About'];
             const selected = settingsMenuItems[themeSelectedIndex];
 
             if (selected === 'Theme') {
@@ -200,6 +217,26 @@ export const useDeviceSimulator = ({ activeTheme, initialViewId = 'home' }: UseD
                 setThemeHistory(prev => [...prev, themeViewId]);
                 setThemeViewId('settingsEqualizer');
                 setThemeSelectedIndex(0);
+            } else if (selected === 'Brightness') {
+                setThemeHistory(prev => [...prev, themeViewId]);
+                setThemeViewId('settingsBrightness');
+                setThemeSelectedIndex(0);
+            } else if (selected === 'Wallpaper') {
+                setThemeHistory(prev => [...prev, themeViewId]);
+                setThemeViewId('settingsWallpaper');
+                setThemeSelectedIndex(0);
+            } else if (selected === 'Date & Time') {
+                setThemeHistory(prev => [...prev, themeViewId]);
+                setThemeViewId('settingsDateTime');
+                setThemeSelectedIndex(0);
+            } else if (selected === 'Language') {
+                setThemeHistory(prev => [...prev, themeViewId]);
+                setThemeViewId('settingsLanguage');
+                setThemeSelectedIndex(0);
+            } else if (selected === 'About') {
+                setThemeHistory(prev => [...prev, themeViewId]);
+                setThemeViewId('settingsAbout');
+                setThemeSelectedIndex(0);
             } else if (selected === 'Shutdown') {
                 setDialogState({
                     visible: true,
@@ -209,18 +246,50 @@ export const useDeviceSimulator = ({ activeTheme, initialViewId = 'home' }: UseD
                     selectedIndex: 1
                 });
             } else if (selected === 'Timed shutdown') {
+                // Cycle: Off → 10 → 20 → 30 → 60 → 90 → 120 → Off
                 const values: Array<'off' | '10' | '20' | '30' | '60' | '90' | '120'> = ['off', '10', '20', '30', '60', '90', '120'];
                 const idx = values.indexOf(timedShutdownValue);
                 setTimedShutdownValue(values[(idx + 1) % values.length]);
+            } else if (selected === 'Shuffle') {
+                setShuffleEnabled(prev => !prev);
+            } else if (selected === 'Repeat') {
+                // Cycle: Off → All → One → Off
+                setRepeatMode(prev => {
+                    if (prev === 'off') return 'all';
+                    if (prev === 'all') return 'one';
+                    return 'off';
+                });
+            } else if (selected === 'File extensions') {
+                setFileExtensionsEnabled(prev => !prev);
+            } else if (selected === 'Key lock') {
+                setKeyLockEnabled(prev => !prev);
+            } else if (selected === 'Key tone') {
+                setKeyToneEnabled(prev => !prev);
+            } else if (selected === 'Key vibration') {
+                setKeyVibrationEnabled(prev => !prev);
+            } else if (selected === 'Display battery') {
+                setDisplayBatteryEnabled(prev => !prev);
             } else if (selected === 'Backlight') {
+                // Cycle: 10s → 15s → 30s → 45s → 60s → 120s → 300s → Always → 10s
                 const values: Array<'10' | '15' | '30' | '45' | '60' | '120' | '300' | 'always'> = ['10', '15', '30', '45', '60', '120', '300', 'always'];
                 const idx = values.indexOf(backlightValue);
                 setBacklightValue(values[(idx + 1) % values.length]);
+            } else if (selected === 'Factory reset') {
+                setDialogState({
+                    visible: true,
+                    title: 'Factory reset',
+                    message: 'Sure to reset?',
+                    options: ['Yes', 'No'],
+                    selectedIndex: 1
+                });
+            } else if (selected === 'Clear cache') {
+                setRequestToast({ message: 'Clearing cache...', visible: true });
+                setTimeout(() => setRequestToast(prev => ({ ...prev, visible: false })), 2000);
             } else {
                 setRequestToast({ message: 'Not Implemented', visible: true });
             }
         }
-    }, [activeTheme, dialogState.visible, themeViewId, themeSelectedIndex, timedShutdownValue, backlightValue, goBack]);
+    }, [activeTheme, dialogState.visible, themeViewId, themeSelectedIndex, timedShutdownValue, backlightValue, shuffleEnabled, repeatMode, fileExtensionsEnabled, keyLockEnabled, keyToneEnabled, keyVibrationEnabled, displayBatteryEnabled, goBack]);
 
     const handleMenuClick = useCallback(() => {
         goBack();
@@ -241,6 +310,14 @@ export const useDeviceSimulator = ({ activeTheme, initialViewId = 'home' }: UseD
         isCharging,
         timedShutdownValue,
         backlightValue,
+        shuffleEnabled,
+        repeatMode,
+        fileExtensionsEnabled,
+        keyLockEnabled,
+        keyToneEnabled,
+        keyVibrationEnabled,
+        displayBatteryEnabled,
+        brightnessLevel,
         dialogState,
         requestToast,
         setRequestToast,
@@ -258,6 +335,14 @@ export const useDeviceSimulator = ({ activeTheme, initialViewId = 'home' }: UseD
         setIsCharging,
         setDialogState,
         setTimedShutdownValue,
-        setBacklightValue
+        setBacklightValue,
+        setShuffleEnabled,
+        setRepeatMode,
+        setFileExtensionsEnabled,
+        setKeyLockEnabled,
+        setKeyToneEnabled,
+        setKeyVibrationEnabled,
+        setDisplayBatteryEnabled,
+        setBrightnessLevel
     };
 };

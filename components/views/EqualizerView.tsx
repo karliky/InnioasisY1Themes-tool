@@ -1,5 +1,5 @@
 import React from 'react';
-import MenuList from './MenuList';
+import SettingsMenuList from './SettingsMenuList';
 
 interface EqualizerViewProps {
   W: number;
@@ -12,6 +12,7 @@ interface EqualizerViewProps {
   itemBackgroundStyle?: React.CSSProperties;
   itemSelectedBackgroundStyle?: React.CSSProperties;
   itemRightArrowUrl?: string;
+  loadedTheme?: any;
 }
 
 const EqualizerView: React.FC<EqualizerViewProps> = ({
@@ -24,51 +25,127 @@ const EqualizerView: React.FC<EqualizerViewProps> = ({
   colors,
   itemBackgroundStyle,
   itemSelectedBackgroundStyle,
-  itemRightArrowUrl
+  itemRightArrowUrl,
+  loadedTheme
 }) => {
+  // EqActivity UI: left RecyclerView list of presets; right panel has title "Equalizer",
+  // ImageView (200dp wide, wrap_content), and label text
+  const MENU_WIDTH = 218;
+  const MENU_HEIGHT = 305;
+  const MENU_LEFT = 9;
+  const MENU_TOP = 45;
+  const RIGHT_PANEL_WIDTH = 200; // 200dp wide for ImageView
+  const RIGHT_PANEL_MARGIN = 22;
+
   const selected = items[selectedIndex];
   const iconUrl = selected?.iconUrl;
 
+  // Selected text color for settings
+  const itemConfig = loadedTheme?.spec?.itemConfig || {};
+  const settingsSelectedColor = itemConfig.itemSelectedTextColor || '#3CFFDE';
+  const settingsColors = {
+    ...colors,
+    text_selected: settingsSelectedColor
+  };
+
   return (
     <div style={{ position: 'absolute', left: 0, top: 0, width: W, height: H }}>
-      {/* Settings Mask Overlay */}
-      {settingMaskUrl && (
-        <img 
-          src={settingMaskUrl} 
-          alt="settings mask overlay" 
-          style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none', zIndex: 5 }} 
-        />
-      )}
-
-      {/* Scrollable list container */}
-      <div style={{ position: 'absolute', left: 0, top: statusBarHeight, width: W, height: H - statusBarHeight, overflow: 'hidden', zIndex: 10 }}>
-        <MenuList
-          items={items}
+      {/* Left list - RecyclerView */}
+      <div style={{
+        position: 'absolute',
+        left: MENU_LEFT,
+        top: MENU_TOP,
+        width: MENU_WIDTH,
+        height: MENU_HEIGHT,
+        overflow: 'hidden',
+        zIndex: 10
+      }}>
+        <SettingsMenuList
+          items={items.map(item => ({ id: item.id, label: item.label }))}
           selectedIndex={selectedIndex}
-          H={H}
-          statusBarHeight={statusBarHeight}
-          colors={colors}
+          containerHeight={MENU_HEIGHT}
+          colors={settingsColors}
           itemBackgroundStyle={itemBackgroundStyle}
           itemSelectedBackgroundStyle={itemSelectedBackgroundStyle}
           itemRightArrowUrl={itemRightArrowUrl}
         />
       </div>
 
-      {/* Right icon panel showing selected item */}
-      {iconUrl && (() => {
-        const panelW = 220;
-        const panelH = 220;
-        const rightX = W - panelW;
-        const centerY = statusBarHeight + (H - statusBarHeight) / 2;
-        return (
-          <div style={{ position: 'absolute', left: rightX, top: centerY - panelH + 90, width: panelW, height: panelH, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: 12, zIndex: 10 }}>
-            <div style={{ color: colors.text_selected, fontWeight: 700, fontSize: 18, marginBottom: 8, textAlign: 'center', maxWidth: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {selected?.label}
-            </div>
-            <img src={iconUrl} alt={selected?.label} style={{ width: '70%', height: '70%', objectFit: 'contain' }} />
+      {/* Right panel - title "Equalizer", ImageView (200dp wide), label text */}
+      <div style={{
+        position: 'absolute',
+        right: RIGHT_PANEL_MARGIN,
+        top: 0,
+        width: RIGHT_PANEL_WIDTH,
+        height: H,
+        zIndex: 10
+      }}>
+        {/* Title */}
+        <div style={{
+          position: 'absolute',
+          top: 58,
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          fontSize: 18,
+          fontWeight: 'bold',
+          color: '#ffffff',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          paddingLeft: 5,
+          paddingRight: 5
+        }}>
+          Equalizer
+        </div>
+
+        {/* ImageView - 200dp wide, wrap_content */}
+        {iconUrl && (
+          <div style={{
+            position: 'absolute',
+            top: 96, // Below title
+            left: 0,
+            right: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'flex-start'
+          }}>
+            <img 
+              src={iconUrl} 
+              alt={selected?.label} 
+              style={{ 
+                maxWidth: 146, // SETTING_ICON size
+                maxHeight: 146,
+                width: 'auto',
+                height: 'auto',
+                objectFit: 'contain',
+                display: 'block'
+              }} 
+            />
           </div>
-        );
-      })()}
+        )}
+
+        {/* Label text */}
+        {selected?.label && (
+          <div style={{
+            position: 'absolute',
+            top: 242, // Below image (96 + 146)
+            left: 0,
+            right: 0,
+            fontSize: 16,
+            color: '#ffffff',
+            textAlign: 'center',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            paddingLeft: 5,
+            paddingRight: 5
+          }}>
+            {selected.label}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

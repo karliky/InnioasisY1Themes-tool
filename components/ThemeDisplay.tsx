@@ -8,6 +8,11 @@ import EqualizerView from './views/EqualizerView';
 import ThemePreviewView from './views/ThemePreviewView';
 import GenericMenuView from './views/GenericMenuView';
 import NowPlayingView from './views/NowPlayingView';
+import BrightnessView from './views/BrightnessView';
+import WallpaperListView from './views/WallpaperListView';
+import DateTimeView from './views/DateTimeView';
+import LanguageView from './views/LanguageView';
+import AboutView from './views/AboutView';
 import ModalDialog from './ModalDialog';
 import Toast from './Toast';
 import selectedNoArrow from '../res/extracted_item_selected_no_arrow.9.png?url';
@@ -68,6 +73,14 @@ interface ThemeDisplayProps {
   onDialogSelect: (option: string) => void;
   timedShutdownValue: 'off' | '10' | '20' | '30' | '60' | '90' | '120';
   backlightValue: '10' | '15' | '30' | '45' | '60' | '120' | '300' | 'always';
+  shuffleEnabled?: boolean;
+  repeatMode?: 'off' | 'all' | 'one';
+  fileExtensionsEnabled?: boolean;
+  keyLockEnabled?: boolean;
+  keyToneEnabled?: boolean;
+  keyVibrationEnabled?: boolean;
+  displayBatteryEnabled?: boolean;
+  brightnessLevel?: number;
 }
 
 const ThemeDisplay: React.FC<ThemeDisplayProps> = ({ 
@@ -92,7 +105,15 @@ const ThemeDisplay: React.FC<ThemeDisplayProps> = ({
   dialogState,
   onDialogSelect,
   timedShutdownValue,
-  backlightValue
+  backlightValue,
+  shuffleEnabled = false,
+  repeatMode = 'off',
+  fileExtensionsEnabled = false,
+  keyLockEnabled = false,
+  keyToneEnabled = true,
+  keyVibrationEnabled = true,
+  displayBatteryEnabled = true,
+  brightnessLevel = 50
 }) => {
   const spec = loadedTheme.spec;
 
@@ -184,8 +205,18 @@ const ThemeDisplay: React.FC<ThemeDisplayProps> = ({
   }, [spec]);
 
   const settingsItems = useMemo(() => {
+    // Get icons based on current state
     const timedShutdownIcon = settingConfig?.[`timedShutdown_${timedShutdownValue}` as keyof typeof settingConfig];
     const backlightIcon = settingConfig?.[`backlight_${backlightValue}` as keyof typeof settingConfig];
+    const shuffleIcon = shuffleEnabled ? settingConfig?.shuffleOn : settingConfig?.shuffleOff;
+    const repeatIcon = repeatMode === 'off' ? settingConfig?.repeatOff : 
+                      repeatMode === 'all' ? settingConfig?.repeatAll : 
+                      settingConfig?.repeatOne;
+    const fileExtensionIcon = fileExtensionsEnabled ? settingConfig?.fileExtensionOn : settingConfig?.fileExtensionOff;
+    const keyLockIcon = keyLockEnabled ? settingConfig?.keyLockOn : settingConfig?.keyLockOff;
+    const keyToneIcon = keyToneEnabled ? settingConfig?.keyToneOn : settingConfig?.keyToneOff;
+    const keyVibrationIcon = keyVibrationEnabled ? settingConfig?.keyVibrationOn : settingConfig?.keyVibrationOff;
+    const displayBatteryIcon = displayBatteryEnabled ? settingConfig?.displayBatteryOn : settingConfig?.displayBatteryOff;
     
     // Value text mappings (from refreshConfig in the real app)
     const getValueText = (id: string): string | undefined => {
@@ -193,21 +224,21 @@ const ThemeDisplay: React.FC<ThemeDisplayProps> = ({
         case 'timed_shutdown':
           return timedShutdownValue === 'off' ? 'Off' : `${timedShutdownValue} min`;
         case 'shuffle':
-          return 'Off'; // Would come from refreshConfig
+          return shuffleEnabled ? 'On' : 'Off';
         case 'repeat':
-          return 'Off'; // Would come from refreshConfig
+          return repeatMode === 'off' ? 'Off' : repeatMode === 'all' ? 'All' : 'One';
         case 'file_extension':
-          return 'Off'; // Would come from refreshConfig
+          return fileExtensionsEnabled ? 'On' : 'Off';
         case 'key_lock':
-          return 'Off'; // Would come from refreshConfig
+          return keyLockEnabled ? 'On' : 'Off';
         case 'key_tone':
-          return 'Off'; // Would come from refreshConfig
+          return keyToneEnabled ? 'On' : 'Off';
         case 'key_vibration':
-          return 'Off'; // Would come from refreshConfig
+          return keyVibrationEnabled ? 'On' : 'Off';
         case 'backlight':
           return backlightValue === 'always' ? 'Always' : `${backlightValue} sec`;
         case 'display_battery':
-          return 'Off'; // Would come from refreshConfig
+          return displayBatteryEnabled ? 'On' : 'Off';
         case 'about':
           return 'Version'; // Would come from refreshConfig
         default:
@@ -218,17 +249,17 @@ const ThemeDisplay: React.FC<ThemeDisplayProps> = ({
     const base = [
       { id: 'shutdown', label: 'Shutdown', iconFile: settingConfig?.shutdown },
       { id: 'timed_shutdown', label: 'Timed shutdown', iconFile: timedShutdownIcon, valueText: getValueText('timed_shutdown') },
-      { id: 'shuffle', label: 'Shuffle', iconFile: settingConfig?.shuffleOff, valueText: getValueText('shuffle') },
-      { id: 'repeat', label: 'Repeat', iconFile: settingConfig?.repeatOff, valueText: getValueText('repeat') },
+      { id: 'shuffle', label: 'Shuffle', iconFile: shuffleIcon, valueText: getValueText('shuffle') },
+      { id: 'repeat', label: 'Repeat', iconFile: repeatIcon, valueText: getValueText('repeat') },
       { id: 'equalizer', label: 'Equalizer', iconFile: settingConfig?.equalizer_normal },
-      { id: 'file_extension', label: 'File extensions', iconFile: settingConfig?.fileExtensionOff, valueText: getValueText('file_extension') },
-      { id: 'key_lock', label: 'Key lock', iconFile: settingConfig?.keyLockOff, valueText: getValueText('key_lock') },
-      { id: 'key_tone', label: 'Key tone', iconFile: settingConfig?.keyToneOff, valueText: getValueText('key_tone') },
-      { id: 'key_vibration', label: 'Key vibration', iconFile: settingConfig?.keyVibrationOff, valueText: getValueText('key_vibration') },
+      { id: 'file_extension', label: 'File extensions', iconFile: fileExtensionIcon, valueText: getValueText('file_extension') },
+      { id: 'key_lock', label: 'Key lock', iconFile: keyLockIcon, valueText: getValueText('key_lock') },
+      { id: 'key_tone', label: 'Key tone', iconFile: keyToneIcon, valueText: getValueText('key_tone') },
+      { id: 'key_vibration', label: 'Key vibration', iconFile: keyVibrationIcon, valueText: getValueText('key_vibration') },
       { id: 'wallpaper', label: 'Wallpaper', iconFile: settingConfig?.wallpaper },
       { id: 'backlight', label: 'Backlight', iconFile: backlightIcon, valueText: getValueText('backlight') },
       { id: 'brightness', label: 'Brightness', iconFile: settingConfig?.brightness },
-      { id: 'display_battery', label: 'Display battery', iconFile: settingConfig?.displayBatteryOff, valueText: getValueText('display_battery') },
+      { id: 'display_battery', label: 'Display battery', iconFile: displayBatteryIcon, valueText: getValueText('display_battery') },
       { id: 'date_time', label: 'Date & Time', iconFile: settingConfig?.dateTime },
       { id: 'theme', label: 'Theme', iconFile: settingConfig?.theme },
       { id: 'language', label: 'Language', iconFile: settingConfig?.language },
@@ -240,7 +271,7 @@ const ThemeDisplay: React.FC<ThemeDisplayProps> = ({
       ...item,
       iconUrl: item.iconFile ? loadedTheme.assetUrlForFile?.(item.iconFile) : undefined
     }));
-  }, [loadedTheme, settingConfig, timedShutdownValue, backlightValue]);
+  }, [loadedTheme, settingConfig, timedShutdownValue, backlightValue, shuffleEnabled, repeatMode, fileExtensionsEnabled, keyLockEnabled, keyToneEnabled, keyVibrationEnabled, displayBatteryEnabled]);
 
   const equalizerItems = useMemo(() => {
     const base = [
@@ -492,6 +523,21 @@ const ThemeDisplay: React.FC<ThemeDisplayProps> = ({
     if (themeViewId === 'settingsTheme') {
       return { id: 'settingsTheme', title: 'Theme', themeImageUrl: settingThemeImageUrl };
     }
+    if (themeViewId === 'settingsBrightness') {
+      return { id: 'settingsBrightness', title: 'Brightness' };
+    }
+    if (themeViewId === 'settingsWallpaper') {
+      return { id: 'settingsWallpaper', title: 'Wallpaper' };
+    }
+    if (themeViewId === 'settingsDateTime') {
+      return { id: 'settingsDateTime', title: 'Date & Time' };
+    }
+    if (themeViewId === 'settingsLanguage') {
+      return { id: 'settingsLanguage', title: 'Language' };
+    }
+    if (themeViewId === 'settingsAbout') {
+      return { id: 'settingsAbout', title: 'About' };
+    }
     if (themeViewId === 'nowPlaying') {
       return { id: 'nowPlaying', title: 'Now Playing' };
     }
@@ -591,6 +637,7 @@ const ThemeDisplay: React.FC<ThemeDisplayProps> = ({
           itemBackgroundStyle={itemBackgroundStyle}
           itemSelectedBackgroundStyle={itemSelectedBackgroundStyle}
           itemRightArrowUrl={itemRightArrowUrl}
+          loadedTheme={loadedTheme}
         />
       )}
 
@@ -601,6 +648,70 @@ const ThemeDisplay: React.FC<ThemeDisplayProps> = ({
           statusBarHeight={statusBarHeight}
           themeImageUrl={(currentView as any).themeImageUrl}
           colors={colors}
+        />
+      )}
+
+      {currentView?.id === 'settingsBrightness' && (
+        <BrightnessView
+          W={W}
+          H={H}
+          statusBarHeight={statusBarHeight}
+          settingMaskUrl={settingMaskUrl}
+          colors={colors}
+          brightnessLevel={brightnessLevel}
+        />
+      )}
+
+      {currentView?.id === 'settingsWallpaper' && (
+        <WallpaperListView
+          W={W}
+          H={H}
+          statusBarHeight={statusBarHeight}
+          settingMaskUrl={settingMaskUrl}
+          colors={colors}
+          itemBackgroundStyle={itemBackgroundStyle}
+          itemSelectedBackgroundStyle={itemSelectedBackgroundStyle}
+          itemRightArrowUrl={itemRightArrowUrl}
+          loadedTheme={loadedTheme}
+        />
+      )}
+
+      {currentView?.id === 'settingsDateTime' && (
+        <DateTimeView
+          W={W}
+          H={H}
+          statusBarHeight={statusBarHeight}
+          settingMaskUrl={settingMaskUrl}
+          colors={colors}
+          itemBackgroundStyle={itemBackgroundStyle}
+          itemSelectedBackgroundStyle={itemSelectedBackgroundStyle}
+          itemRightArrowUrl={itemRightArrowUrl}
+          loadedTheme={loadedTheme}
+        />
+      )}
+
+      {currentView?.id === 'settingsLanguage' && (
+        <LanguageView
+          W={W}
+          H={H}
+          statusBarHeight={statusBarHeight}
+          settingMaskUrl={settingMaskUrl}
+          colors={colors}
+          itemBackgroundStyle={itemBackgroundStyle}
+          itemSelectedBackgroundStyle={itemSelectedBackgroundStyle}
+          itemRightArrowUrl={itemRightArrowUrl}
+          loadedTheme={loadedTheme}
+        />
+      )}
+
+      {currentView?.id === 'settingsAbout' && (
+        <AboutView
+          W={W}
+          H={H}
+          statusBarHeight={statusBarHeight}
+          settingMaskUrl={settingMaskUrl}
+          colors={colors}
+          loadedTheme={loadedTheme}
         />
       )}
 

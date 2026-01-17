@@ -98,6 +98,14 @@ const EditorPage: React.FC = () => {
     isCharging,
     timedShutdownValue,
     backlightValue,
+    shuffleEnabled,
+    repeatMode,
+    fileExtensionsEnabled,
+    keyLockEnabled,
+    keyToneEnabled,
+    keyVibrationEnabled,
+    displayBatteryEnabled,
+    brightnessLevel,
     dialogState,
     requestToast,
     setRequestToast,
@@ -1081,6 +1089,13 @@ const EditorPage: React.FC = () => {
                     onDialogSelect={handleDialogSelect}
                     timedShutdownValue={timedShutdownValue}
                     backlightValue={backlightValue}
+                    shuffleEnabled={shuffleEnabled}
+                    repeatMode={repeatMode}
+                    fileExtensionsEnabled={fileExtensionsEnabled}
+                    keyLockEnabled={keyLockEnabled}
+                    keyToneEnabled={keyToneEnabled}
+                    keyVibrationEnabled={keyVibrationEnabled}
+                    displayBatteryEnabled={displayBatteryEnabled}
                   />
                 )
               }

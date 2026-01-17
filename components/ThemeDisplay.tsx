@@ -471,16 +471,28 @@ const ThemeDisplay: React.FC<ThemeDisplayProps> = ({
   }, [equalizerItems, homeItems, settingThemeImageUrl, settingsItems, themeViewId]);
 
   return (
-    <div className="rounded-sm overflow-hidden relative select-none" style={{ width: W, height: H, backgroundColor: '#000', fontFamily: defaultFontFamily }}>
+    <div 
+      className="rounded-sm overflow-hidden relative select-none" 
+      style={{ 
+        width: W, 
+        height: H, 
+        backgroundColor: '#000', 
+        fontFamily: defaultFontFamily,
+        // Wallpaper: Set as background on window decor view (not ImageView)
+        // Scaling: loadProportionalBitmap to WALLPAPER size (480x360), fit-inside at load time
+        // Then applied as BitmapDrawable background which fills the view
+        backgroundImage: backgroundUrl ? `url(${backgroundUrl})` : undefined,
+        backgroundSize: backgroundUrl ? 'cover' : undefined, // Fill view (image pre-scaled to fit 480x360)
+        backgroundPosition: backgroundUrl ? 'center' : undefined,
+        backgroundRepeat: backgroundUrl ? 'no-repeat' : undefined
+      }}
+    >
       <style>{`
         @keyframes marquee {
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }
         }
       `}</style>
-      
-      {/* Background image */}
-      {backgroundUrl && <img src={backgroundUrl} alt="bg" style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', objectFit: 'fill' }} />}
 
       {/* Status Bar */}
       <StatusBar

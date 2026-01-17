@@ -187,26 +187,54 @@ const ThemeDisplay: React.FC<ThemeDisplayProps> = ({
     const timedShutdownIcon = settingConfig?.[`timedShutdown_${timedShutdownValue}` as keyof typeof settingConfig];
     const backlightIcon = settingConfig?.[`backlight_${backlightValue}` as keyof typeof settingConfig];
     
+    // Value text mappings (from refreshConfig in the real app)
+    const getValueText = (id: string): string | undefined => {
+      switch (id) {
+        case 'timed_shutdown':
+          return timedShutdownValue === 'off' ? 'Off' : `${timedShutdownValue} min`;
+        case 'shuffle':
+          return 'Off'; // Would come from refreshConfig
+        case 'repeat':
+          return 'Off'; // Would come from refreshConfig
+        case 'file_extension':
+          return 'Off'; // Would come from refreshConfig
+        case 'key_lock':
+          return 'Off'; // Would come from refreshConfig
+        case 'key_tone':
+          return 'Off'; // Would come from refreshConfig
+        case 'key_vibration':
+          return 'Off'; // Would come from refreshConfig
+        case 'backlight':
+          return backlightValue === 'always' ? 'Always' : `${backlightValue} sec`;
+        case 'display_battery':
+          return 'Off'; // Would come from refreshConfig
+        case 'about':
+          return 'Version'; // Would come from refreshConfig
+        default:
+          return undefined;
+      }
+    };
+    
     const base = [
       { id: 'shutdown', label: 'Shutdown', iconFile: settingConfig?.shutdown },
-      { id: 'timed_shutdown', label: 'Timed shutdown', iconFile: timedShutdownIcon },
-      { id: 'shuffle', label: 'Shuffle', iconFile: settingConfig?.shuffleOff },
-      { id: 'repeat', label: 'Repeat', iconFile: settingConfig?.repeatOff },
+      { id: 'timed_shutdown', label: 'Timed shutdown', iconFile: timedShutdownIcon, valueText: getValueText('timed_shutdown') },
+      { id: 'shuffle', label: 'Shuffle', iconFile: settingConfig?.shuffleOff, valueText: getValueText('shuffle') },
+      { id: 'repeat', label: 'Repeat', iconFile: settingConfig?.repeatOff, valueText: getValueText('repeat') },
       { id: 'equalizer', label: 'Equalizer', iconFile: settingConfig?.equalizer_normal },
-      { id: 'file_extension', label: 'File extension', iconFile: settingConfig?.fileExtensionOff },
-      { id: 'key_lock', label: 'Key lock', iconFile: settingConfig?.keyLockOff },
-      { id: 'key_tone', label: 'Key tone', iconFile: settingConfig?.keyToneOff },
-      { id: 'key_vibration', label: 'Key vibration', iconFile: settingConfig?.keyVibrationOff },
+      { id: 'file_extension', label: 'File extensions', iconFile: settingConfig?.fileExtensionOff, valueText: getValueText('file_extension') },
+      { id: 'key_lock', label: 'Key lock', iconFile: settingConfig?.keyLockOff, valueText: getValueText('key_lock') },
+      { id: 'key_tone', label: 'Key tone', iconFile: settingConfig?.keyToneOff, valueText: getValueText('key_tone') },
+      { id: 'key_vibration', label: 'Key vibration', iconFile: settingConfig?.keyVibrationOff, valueText: getValueText('key_vibration') },
       { id: 'wallpaper', label: 'Wallpaper', iconFile: settingConfig?.wallpaper },
-      { id: 'backlight', label: 'Backlight', iconFile: backlightIcon },
+      { id: 'backlight', label: 'Backlight', iconFile: backlightIcon, valueText: getValueText('backlight') },
       { id: 'brightness', label: 'Brightness', iconFile: settingConfig?.brightness },
-      { id: 'display_battery', label: 'Display battery', iconFile: settingConfig?.displayBatteryOff },
+      { id: 'display_battery', label: 'Display battery', iconFile: settingConfig?.displayBatteryOff, valueText: getValueText('display_battery') },
       { id: 'date_time', label: 'Date & Time', iconFile: settingConfig?.dateTime },
       { id: 'theme', label: 'Theme', iconFile: settingConfig?.theme },
       { id: 'language', label: 'Language', iconFile: settingConfig?.language },
       { id: 'factory_reset', label: 'Factory reset', iconFile: settingConfig?.factoryReset },
       { id: 'clear_cache', label: 'Clear cache', iconFile: settingConfig?.clearCache },
-      { id: 'about', label: 'About', iconFile: undefined }
+      { id: 'about', label: 'About', iconFile: undefined, valueText: getValueText('about') }
     ];
     return base.map(item => ({
       ...item,
@@ -545,6 +573,9 @@ const ThemeDisplay: React.FC<ThemeDisplayProps> = ({
           itemBackgroundStyle={itemBackgroundStyle}
           itemSelectedBackgroundStyle={itemSelectedBackgroundStyle}
           itemRightArrowUrl={itemRightArrowUrl}
+          loadedTheme={loadedTheme}
+          timedShutdownValue={timedShutdownValue}
+          backlightValue={backlightValue}
         />
       )}
 

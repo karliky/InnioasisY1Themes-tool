@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
 import { LoadedTheme } from '../types';
+import { optimizeThemeAssets } from './imageOptimization';
 
 /**
  * Convert the simulator's ThemeSpec to Y1 device config.json format
@@ -31,37 +32,25 @@ function convertToY1Config(spec: any): any {
   return config;
 }
 
-/**
- * Fetch an image from a URL and return as Blob
- */
-async function fetchImageAsBlob(url: string): Promise<Blob> {
-  // Handle data URLs (base64)
-  if (url.startsWith('data:')) {
-    const response = await fetch(url);
-    return await response.blob();
-  }
-  
-  // Handle blob URLs
-  if (url.startsWith('blob:')) {
-    const response = await fetch(url);
-    return await response.blob();
-  }
-  
-  // Handle regular URLs
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${url}: ${response.statusText}`);
-  }
-  return await response.blob();
+export interface ExportProgress {
+  step: 'optimizing' | 'packaging';
+  progress: number; // 0-100
+  currentFile?: string;
+  totalFiles?: number;
+  processedFiles?: number;
 }
 
 /**
  * Download a theme as a .zip file compatible with Y1 device
  * @param theme - The loaded theme to export
  * @param themeName - Optional custom name for the theme folder/file
+ * @param onProgress - Optional callback for progress updates
  */
-export async function downloadTheme(theme: LoadedTheme, themeName?: string): Promise<void> {
-  const zip = new JSZip();
+export async function downloadTheme(
+  theme: LoadedTheme, 
+  themeName?: string,
+  onProgress?: (progress: ExportProgress) => void
+): Promise<void> {
   const spec = theme.spec as any; // Cast to any to access optional properties like theme_info
   // Prioritize edited title from metadata, then fall back to provided name or theme id
   const name = spec?.theme_info?.title || themeName || theme.id || 'theme';
@@ -70,42 +59,98 @@ export async function downloadTheme(theme: LoadedTheme, themeName?: string): Pro
   const sanitizedName = name.replace(/[^a-zA-Z0-9_\-\s]/g, '').replace(/\s+/g, '_');
   
   try {
-    // 1. Generate config.json in Y1 device format
+    // Step 1: Optimize and resize images
+    onProgress?.({
+      step: 'optimizing',
+      progress: 0,
+      totalFiles: theme.loadedAssets.length,
+      processedFiles: 0
+    });
+
+    const optimizedAssets = await optimizeThemeAssets(
+      theme.loadedAssets,
+      (current, total, fileName) => {
+        const progress = Math.round((current / total) * 100);
+        onProgress?.({
+          step: 'optimizing',
+          progress,
+          currentFile: fileName,
+          totalFiles: total,
+          processedFiles: current
+        });
+      }
+    );
+
+    onProgress?.({
+      step: 'packaging',
+      progress: 0,
+      totalFiles: theme.loadedAssets.length + 1, // +1 for config.json
+      processedFiles: theme.loadedAssets.length
+    });
+
+    // Step 2: Generate config.json in Y1 device format
     const y1Config = convertToY1Config(theme.spec);
+    const zip = new JSZip();
     zip.file('config.json', JSON.stringify(y1Config, null, 2));
     
-    // 2. Add all theme assets
-    const fetchPromises: Promise<void>[] = [];
-    
+    // Step 3: Add all optimized assets to ZIP
+    let addedCount = 0;
     for (const asset of theme.loadedAssets) {
-      const promise = (async () => {
-        try {
-          const blob = await fetchImageAsBlob(asset.url);
-          zip.file(asset.fileName, blob);
-          console.log(`✓ Added ${asset.fileName} to ZIP`);
-        } catch (error) {
-          console.warn(`⚠️ Failed to add ${asset.fileName}:`, error);
-          // Continue with other assets even if one fails
-        }
-      })();
-      
-      fetchPromises.push(promise);
+      const optimizedBlob = optimizedAssets.get(asset.fileName);
+      if (optimizedBlob) {
+        zip.file(asset.fileName, optimizedBlob);
+        addedCount++;
+        console.log(`✓ Added optimized ${asset.fileName} to ZIP`);
+        
+        onProgress?.({
+          step: 'packaging',
+          progress: Math.round((addedCount / theme.loadedAssets.length) * 50), // First 50% for adding files
+          currentFile: asset.fileName,
+          totalFiles: theme.loadedAssets.length + 1,
+          processedFiles: addedCount + 1 // +1 for config.json
+        });
+      } else {
+        console.warn(`⚠️ No optimized blob found for ${asset.fileName}`);
+      }
     }
     
-    // Wait for all assets to be fetched
-    await Promise.all(fetchPromises);
-    
-    // 3. Generate the ZIP file
+    // Step 4: Generate the ZIP file
+    onProgress?.({
+      step: 'packaging',
+      progress: 50,
+      currentFile: 'Generating ZIP...',
+      totalFiles: theme.loadedAssets.length + 1,
+      processedFiles: theme.loadedAssets.length + 1
+    });
+
     console.log('📦 Generating ZIP file...');
     const zipBlob = await zip.generateAsync({
       type: 'blob',
       compression: 'DEFLATE',
       compressionOptions: {
         level: 9 // Maximum compression
-      }
+      },
+      streamFiles: true
+    }, (metadata) => {
+      // Update progress during ZIP generation (50-100%)
+      const zipProgress = 50 + Math.round((metadata.percent / 100) * 50);
+      onProgress?.({
+        step: 'packaging',
+        progress: zipProgress,
+        currentFile: 'Compressing...',
+        totalFiles: theme.loadedAssets.length + 1,
+        processedFiles: theme.loadedAssets.length + 1
+      });
     });
     
-    // 4. Trigger download
+    onProgress?.({
+      step: 'packaging',
+      progress: 100,
+      totalFiles: theme.loadedAssets.length + 1,
+      processedFiles: theme.loadedAssets.length + 1
+    });
+    
+    // Step 5: Trigger download
     const url = URL.createObjectURL(zipBlob);
     const link = document.createElement('a');
     link.href = url;

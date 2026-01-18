@@ -8,11 +8,12 @@ import ImageAssetsSidebar from '../../components/ImageAssetsSidebar';
 import MenuBar from '../../components/MenuBar';
 import ThemeTabs from '../../components/ThemeTabs';
 import TutorialModal from '../../components/TutorialModal';
+import ExportProgressModal from '../../components/ExportProgressModal';
 import { Tooltip } from '../../components/Tooltip';
 import { Song, LoadedTheme, ThemeAssetInfo } from '../../types';
 import { MOCK_SONGS } from '../../constants';
 import { loadAvailableThemes, loadClonedThemes, cloneTheme, updateClonedThemeAsset, deleteClonedTheme, updateClonedThemeSpec, importThemeFromZip } from '../../services/themeService';
-import { downloadTheme } from '../../utils/themeExport';
+import { downloadTheme, ExportProgress } from '../../utils/themeExport';
 
 const DEVICE_BACKGROUND_COLORS: Record<string, string> = {
   black: '#2a2a2a', // Lighter gray for better contrast with black device
@@ -129,6 +130,8 @@ const EditorPage: React.FC = () => {
   const [deviceColor, setDeviceColor] = useState<'black' | 'silver' | 'yellow' | 'teal' | 'blue' | 'orange'>('teal');
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('Not Implemented');
+  const [exportProgress, setExportProgress] = useState<ExportProgress | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Debounce refs for spec changes (to avoid losing input focus)
   const pendingSpecChangesRef = useRef<any>(null);
@@ -525,15 +528,32 @@ const EditorPage: React.FC = () => {
   }, [activeTheme]);
 
   const handleExportTheme = useCallback(async (format: 'zip' | 'metadata') => {
-    if (!activeTheme) return;
+    if (!activeTheme || format !== 'zip') return; // Only handle ZIP exports with optimization
+    
+    setIsExporting(true);
+    setExportProgress({
+      step: 'optimizing',
+      progress: 0,
+      totalFiles: activeTheme.loadedAssets.length,
+      processedFiles: 0
+    });
+
     try {
-      setToastMessage('Exporting theme...');
-      setShowToast(true);
-      await downloadTheme(activeTheme);
-      setToastMessage(`Theme exported as ${format}`);
-      setShowToast(true);
+      await downloadTheme(activeTheme, undefined, (progress) => {
+        setExportProgress(progress);
+      });
+      
+      // Close modal after a brief delay to show completion
+      setTimeout(() => {
+        setIsExporting(false);
+        setExportProgress(null);
+        setToastMessage('Theme exported successfully!');
+        setShowToast(true);
+      }, 500);
     } catch (error: any) {
       console.error('Failed to export theme:', error);
+      setIsExporting(false);
+      setExportProgress(null);
       setToastMessage(error.message || 'Failed to export theme');
       setShowToast(true);
     }
@@ -697,6 +717,20 @@ const EditorPage: React.FC = () => {
         visible={showTutorial}
         onClose={handleTutorialClose}
         onSkip={handleTutorialSkip}
+      />
+
+      {/* Export Progress Modal */}
+      <ExportProgressModal
+        visible={isExporting}
+        currentStep={exportProgress?.step || 'optimizing'}
+        progress={exportProgress?.progress || 0}
+        currentFile={exportProgress?.currentFile}
+        totalFiles={exportProgress?.totalFiles}
+        processedFiles={exportProgress?.processedFiles}
+        onCancel={() => {
+          setIsExporting(false);
+          setExportProgress(null);
+        }}
       />
 
       {/* Global Menu Bar */}

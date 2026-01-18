@@ -14,6 +14,9 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     define: {
     },
+    optimizeDeps: {
+      include: ['browser-image-compression']
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

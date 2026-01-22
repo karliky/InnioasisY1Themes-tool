@@ -111,13 +111,16 @@ const SettingsMenuList: React.FC<SettingsMenuListProps> = ({
               )}
 
               {/* Right arrow - visibility controlled by selection and item type */}
-              {/* Items with On/Off states (valueText is "On" or "Off") don't show arrow */}
-              {selected && item.valueText !== 'On' && item.valueText !== 'Off' && (
+              {/* Per HOME_SCREEN_REVERSE_ENGINEERING.md: 
+                  - Items with haveNext == true → arrow shown, value text hidden (opens another view)
+                  - Items with haveNext == false → value text shown, arrow hidden (toggles/cycles)
+                  - Since we don't have haveNext property, we infer: items WITHOUT valueText show arrow */}
+              {selected && !item.valueText && (
                 <div style={{ 
                   position: 'absolute', 
-                  right: 10, // layout_marginEnd="10dp"
+                  right: 5, // layout_marginEnd="5dp" (from item_setting.xml)
                   top: 0,
-                  height: itemHeight, // fill_parent
+                  height: itemHeight, // fill_parent (row height 40dp for settings)
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center' 
@@ -128,8 +131,10 @@ const SettingsMenuList: React.FC<SettingsMenuListProps> = ({
                       alt="arrow" 
                       style={{ 
                         height: '100%', // adjustViewBounds: height fills parent
-                        width: 'auto', // width adjusts to maintain aspect
-                        objectFit: 'contain', // fit-inside, no crop
+                        width: 'auto', // width adjusts to maintain aspect (wrap_content)
+                        objectFit: 'contain', // fit-inside to SMALL_ICON target (64x64px), no crop
+                        maxWidth: 64, // SMALL_ICON target size: 64x64px
+                        maxHeight: 64,
                         opacity: 0.9 
                       }} 
                     />

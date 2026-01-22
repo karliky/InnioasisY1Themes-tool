@@ -152,12 +152,13 @@ const MenuList: React.FC<MenuListProps> = ({
               </div>
 
               {/* Right arrow - ImageView with adjustViewBounds="true", layout_height="fill_parent" */}
+              {/* Per HOME_SCREEN_REVERSE_ENGINEERING.md: only shown on selected row, 10dp margin, SMALL_ICON (64x64px) */}
               {selected && (
                 <div style={{ 
                   position: 'absolute', 
-                  right: 10, // layout_marginEnd="10dp"
+                  right: 10, // layout_marginEnd="10dp" (from item_main.xml)
                   top: 0,
-                  height: rowH, // fill_parent (fills row height)
+                  height: rowH, // fill_parent (fills row height, 45dp for home menu)
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center' 
@@ -168,8 +169,10 @@ const MenuList: React.FC<MenuListProps> = ({
                       alt="arrow" 
                       style={{ 
                         height: '100%', // adjustViewBounds: height fills parent
-                        width: 'auto', // width adjusts to maintain aspect
-                        objectFit: 'contain', // fit-inside, no crop
+                        width: 'auto', // width adjusts to maintain aspect (wrap_content)
+                        objectFit: 'contain', // fit-inside to SMALL_ICON target (64x64px), no crop
+                        maxWidth: 64, // SMALL_ICON target size: 64x64px
+                        maxHeight: 64,
                         opacity: 0.9 
                       }} 
                     />

@@ -33,8 +33,13 @@ export function getTargetSizeForAsset(asset: ThemeAssetInfo): { width: number; h
     return { width: 320, height: 240 };
   }
 
-  // SMALL_ICON: 64x64 - Small status icons
+  // SMALL_ICON: 64x64 - Small status icons and right arrow
   if (configKey.startsWith('statusConfig.')) {
+    return { width: 64, height: 64 };
+  }
+
+  // SMALL_ICON: 64x64 - Right arrow indicator (itemRightArrow)
+  if (configKey === 'itemConfig.itemRightArrow') {
     return { width: 64, height: 64 };
   }
 

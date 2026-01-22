@@ -3,6 +3,7 @@ import { ThemeAssetInfo, LoadedTheme } from '../types';
 import EquivalentImagesModal from './EquivalentImagesModal';
 import { downloadTheme, getExportPreview } from '../utils/themeExport';
 import { Tooltip } from './Tooltip';
+import { getTargetSizeForAsset } from '../utils/imageOptimization';
 
 interface ImageAssetsSidebarProps {
   assets: ThemeAssetInfo[];
@@ -824,6 +825,7 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
                 const isExpanded = expandedAsset === asset.fileName;
                 const fileName = getFileName(asset.fileName);
                 const ext = getFileExtension(asset.fileName);
+                const expectedSize = getTargetSizeForAsset(asset);
                 
                 return (
                   <div 
@@ -856,6 +858,11 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
                           <span className={`text-[9px] font-bold ${getExtensionColor(ext)} bg-[#2D2D2D] border border-[#4A4A4A] px-1.5 py-0.5`} style={{ fontFamily: 'var(--font-mono)' }}>
                             {ext}
                           </span>
+                          {expectedSize && (
+                            <span className="text-[9px] font-bold text-[#3C7FD5] bg-[#2D2D2D] border border-[#4A4A4A] px-1.5 py-0.5" style={{ fontFamily: 'var(--font-mono)' }} title="Expected size">
+                              {expectedSize.width}×{expectedSize.height}
+                            </span>
+                          )}
                         </div>
                         <p className="text-[10px] text-[#999999] mt-1.5 line-clamp-2" style={{ fontFamily: 'var(--font-mono)' }}>
                           {asset.description}
@@ -955,6 +962,12 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
                             <span className="text-[9px] text-[#C0C0C0] uppercase font-bold" style={{ fontFamily: 'var(--font-mono)' }}>Config:</span>
                             <span className="text-[10px] text-[#999999] font-mono">{asset.configKey}</span>
                           </div>
+                          {expectedSize && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-[9px] text-[#C0C0C0] uppercase font-bold" style={{ fontFamily: 'var(--font-mono)' }}>Size:</span>
+                              <span className="text-[10px] text-[#3C7FD5] font-mono font-bold">{expectedSize.width}×{expectedSize.height}px</span>
+                            </div>
+                          )}
                           <div className="flex items-start gap-2">
                             <span className="text-[9px] text-[#C0C0C0] uppercase font-bold" style={{ fontFamily: 'var(--font-mono)' }}>Purpose:</span>
                             <span className="text-[10px] text-[#999999]" style={{ fontFamily: 'var(--font-body)' }}>{asset.description}</span>

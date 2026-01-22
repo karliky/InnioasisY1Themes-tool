@@ -156,7 +156,7 @@ const StatusBar: React.FC<StatusBarProps> = ({
           />
         )}
 
-        {/* Battery indicator - 25dp height, adjustViewBounds="true" */}
+        {/* Battery indicator - 20dp height, adjustViewBounds="true" */}
         {(() => {
           const batteryUrl = getBatteryIconFromConfig(batteryLevel, isCharging) || getBatteryIconUrl(batteryLevel, isCharging);
           const percentage = ((batteryLevel + 1) * 25);
@@ -166,7 +166,7 @@ const StatusBar: React.FC<StatusBarProps> = ({
                 src={batteryUrl} 
                 alt="battery" 
                 style={{ 
-                  height: 25, // 25dp height
+                  height: 15, // 20dp height
                   width: 'auto', // adjustViewBounds="true"
                   objectFit: 'contain', // fit-inside to SMALL_ICON target, no crop
                   display: 'block'

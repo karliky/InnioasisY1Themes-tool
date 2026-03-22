@@ -18,6 +18,11 @@ export function getTargetSizeForAsset(asset: ThemeAssetInfo): { width: number; h
     return { width: 166, height: 166 };
   }
 
+  // Settings full-screen overlay (same as wallpaper resolution)
+  if (configKey === 'settingConfig.settingMask') {
+    return { width: 320, height: 240 };
+  }
+
   // SETTING_ICON: 146x146 - Settings menu icons
   if (configKey.startsWith('settingConfig.')) {
     return { width: 146, height: 146 };

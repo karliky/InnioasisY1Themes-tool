@@ -9,6 +9,7 @@ import MenuBar from '../../components/MenuBar';
 import ThemeTabs from '../../components/ThemeTabs';
 import TutorialModal from '../../components/TutorialModal';
 import ExportProgressModal from '../../components/ExportProgressModal';
+import AIGeneratorModal from '../../components/AIGeneratorModal';
 import { Tooltip } from '../../components/Tooltip';
 import { Song, LoadedTheme, ThemeAssetInfo } from '../../types';
 import { MOCK_SONGS } from '../../constants';
@@ -33,6 +34,7 @@ const EditorPage: React.FC = () => {
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const [showAIGeneratorModal, setShowAIGeneratorModal] = useState(false);
 
   // Playback time state
   const [elapsedTime, setElapsedTime] = useState(0); // in seconds
@@ -719,6 +721,14 @@ const EditorPage: React.FC = () => {
         onSkip={handleTutorialSkip}
       />
 
+      {/* AI Generator Modal */}
+      {showAIGeneratorModal && (
+        <AIGeneratorModal
+          onClose={() => setShowAIGeneratorModal(false)}
+          defaultBlankTheme={availableThemes.find(t => t.id.toLowerCase() === 'default blank')}
+        />
+      )}
+
       {/* Export Progress Modal */}
       <ExportProgressModal
         visible={isExporting}
@@ -1200,6 +1210,7 @@ const EditorPage: React.FC = () => {
             availableThemes={availableThemes}
             isEditable={activeTheme.isEditable}
             currentTheme={activeTheme}
+            onOpenAIGenerator={() => setShowAIGeneratorModal(true)}
           />
         )}
       </div>

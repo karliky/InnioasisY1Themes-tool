@@ -15,9 +15,10 @@ interface ImageAssetsSidebarProps {
   availableThemes?: LoadedTheme[];
   isEditable?: boolean;  // Whether the theme can be edited (false for installed themes)
   currentTheme?: LoadedTheme;  // The full loaded theme for downloading
+  onOpenAIGenerator?: () => void;
 }
 
-const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeName, spec, onClose, onUpdateAsset, onUpdateColor, availableThemes = [], isEditable = true, currentTheme }) => {
+const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeName, spec, onClose, onUpdateAsset, onUpdateColor, availableThemes = [], isEditable = true, currentTheme, onOpenAIGenerator }) => {
   const [expandedAsset, setExpandedAsset] = useState<string | null>(null);
   const [pasteStatus, setPasteStatus] = useState<{ fileName: string; status: 'success' | 'error'; message: string } | null>(null);
   const [copyStatus, setCopyStatus] = useState<{ fileName: string; status: 'success' | 'error'; message: string } | null>(null);
@@ -443,6 +444,36 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
               style={{ fontFamily: 'var(--font-mono)' }}
             >Info</button>
           </Tooltip>
+          {onOpenAIGenerator && (
+            <Tooltip content="Generate icons with AI">
+              <button
+                onClick={onOpenAIGenerator}
+                className="ml-auto flex items-center gap-1.5 px-2 py-1 text-[10px] rounded-sm border transition-all"
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  background: 'linear-gradient(135deg, rgba(109,40,217,0.2), rgba(37,99,235,0.2))',
+                  border: '1px solid rgba(139,92,246,0.4)',
+                  color: '#A78BFA',
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(139,92,246,0.8)';
+                  (e.currentTarget as HTMLButtonElement).style.color = '#C4B5FD';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(139,92,246,0.4)';
+                  (e.currentTarget as HTMLButtonElement).style.color = '#A78BFA';
+                }}
+              >
+                <img
+                  src="/magicai.png"
+                  alt="AI"
+                  className="w-3 h-3 object-contain shrink-0"
+                  style={{ filter: 'invert(1)', mixBlendMode: 'screen' }}
+                />
+                AI
+              </button>
+            </Tooltip>
+          )}
         </div>
 
         {activeTab === 'colors' && (

@@ -251,7 +251,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h3 className="text-xl font-bold text-[#FFFFFF]" style={{ fontFamily: 'var(--font-body)' }}>About Theme Maker Y1</h3>
-                <p className="text-[10px] text-[#888888] mt-1" style={{ fontFamily: 'var(--font-mono)' }}>Theme editor for Innioasis Y1 Classic Mp3 devices</p>
+                <p className="text-[11px] text-[#888888] mt-1" style={{ fontFamily: 'var(--font-mono)' }}>Theme editor for Innioasis Y1 Classic Mp3 devices</p>
               </div>
               <button
                 onClick={() => setShowHelpModal(false)}
@@ -275,7 +275,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
                 </svg>
                 <div className="flex-1">
                   <p className="text-xs font-bold text-[#FFFFFF]" style={{ fontFamily: 'var(--font-body)' }}>GitHub</p>
-                  <p className="text-[10px] text-[#888888]" style={{ fontFamily: 'var(--font-mono)' }}>@karliky</p>
+                  <p className="text-[11px] text-[#888888]" style={{ fontFamily: 'var(--font-mono)' }}>@karliky</p>
                 </div>
                 <svg className="w-4 h-4 text-[#888888] group-hover:text-[#CCCCCC] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -353,12 +353,12 @@ const MenuBar: React.FC<MenuBarProps> = ({
             </div>
 
             <div className="mt-6 space-y-3">
-              <p className="text-[10px] font-bold text-[#3C7FD5] uppercase tracking-[0.1em]" style={{ fontFamily: 'var(--font-mono)' }}>Credits</p>
+              <p className="text-[11px] font-bold text-[#3C7FD5] uppercase tracking-[0.1em]" style={{ fontFamily: 'var(--font-mono)' }}>Credits</p>
               <a
                 href="https://x.com/k4rliky"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[10px] text-[#CCCCCC] hover:text-[#FFFFFF] transition-colors flex items-center gap-2 group"
+                className="text-xs text-[#CCCCCC] hover:text-[#FFFFFF] transition-colors flex items-center gap-2 group"
                 style={{ fontFamily: 'var(--font-mono)' }}
               >
                 <svg className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="currentColor" viewBox="0 0 24 24">
@@ -370,7 +370,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
                 href="https://karliky.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[10px] text-[#CCCCCC] hover:text-[#FFFFFF] transition-colors flex items-center gap-2 group"
+                className="text-xs text-[#CCCCCC] hover:text-[#FFFFFF] transition-colors flex items-center gap-2 group"
                 style={{ fontFamily: 'var(--font-mono)' }}
               >
                 <svg className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
@@ -382,7 +382,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
                 href="https://karliky.dev"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[10px] text-[#CCCCCC] hover:text-[#FFFFFF] transition-colors flex items-center gap-2 group"
+                className="text-xs text-[#CCCCCC] hover:text-[#FFFFFF] transition-colors flex items-center gap-2 group"
                 style={{ fontFamily: 'var(--font-mono)' }}
               >
                 <svg className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
@@ -393,8 +393,8 @@ const MenuBar: React.FC<MenuBarProps> = ({
             </div>
 
             <div className="mt-4 p-3 bg-[#3A3A3A] border border-[#4A4A4A] rounded-sm">
-              <p className="text-[10px] text-[#888888]" style={{ fontFamily: 'var(--font-mono)' }}>
-                💡 Found a bug or have a feature request? Open an issue on GitHub!
+              <p className="text-[11px] text-[#888888]" style={{ fontFamily: 'var(--font-mono)' }}>
+                💡 Found a bug or have a feature request? <a href="https://github.com/karliky/InnioasisY1Themes-tool/issues" target="_blank" rel="noopener noreferrer" className="text-[#3C7FD5] underline">Open an issue on GitHub!</a>
               </p>
             </div>
           </div>
@@ -408,7 +408,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h3 className="text-xl font-bold text-[#FFFFFF]" style={{ fontFamily: 'var(--font-body)' }}>Join the Timmkoo Modders Discord!</h3>
-                <p className="text-[10px] text-[#888888] mt-1" style={{ fontFamily: 'var(--font-mono)' }}>We'd love your feedback and ideas. Join the <a href="https://discord.gg/3zbfaTNN7V" target="_blank" rel="noopener noreferrer" className="text-[#3C7FD5] underline">Timmkoo Modders Discord</a> and head to the <span className="font-bold text-[#3C7FD5]">#themes</span> channel, or visit <a href="https://www.reddit.com/r/innioasis/" target="_blank" rel="noopener noreferrer" className="text-[#3C7FD5] underline">r/innioasis</a> on Reddit!</p>
+                <p className="text-sm text-[#888888] mt-1" style={{ fontFamily: 'var(--font-mono)' }}>We'd love your feedback and ideas. Join the <a href="https://discord.gg/3zbfaTNN7V" target="_blank" rel="noopener noreferrer" className="text-[#3C7FD5] underline">Timmkoo Modders Discord</a> and head to the <span className="font-bold text-[#3C7FD5]">#themes</span> channel, or visit <a href="https://www.reddit.com/r/innioasis/" target="_blank" rel="noopener noreferrer" className="text-[#3C7FD5] underline">r/innioasis</a> on Reddit!</p>
               </div>
               <button
                 onClick={() => setShowFeedbackModal(false)}

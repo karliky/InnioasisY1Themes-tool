@@ -17,12 +17,15 @@ import { loadAvailableThemes, loadClonedThemes, cloneTheme, updateClonedThemeAss
 import { downloadTheme, ExportProgress } from '../../utils/themeExport';
 
 const DEVICE_BACKGROUND_COLORS: Record<string, string> = {
-  black: '#2a2a2a', // Lighter gray for better contrast with black device
-  silver: '#1e293b',
-  yellow: '#1c1917',
-  teal: '#0f172a',
-  blue: '#18181b',
-  orange: '#1e1b1b'
+  black:       '#1c1c1c',
+  silver:      '#2a2d30',
+  yellow:      '#26230d',
+  teal:        '#0d2420',
+  blue:        '#0d1828',
+  orange:      '#28160a',
+  pink:        '#260d18',
+  lightYellow: '#252008',
+  purple:      '#160d26',
 };
 
 
@@ -129,7 +132,7 @@ const EditorPage: React.FC = () => {
   } = useDeviceSimulator({ activeTheme });
 
   // Missing state restoration
-  const [deviceColor, setDeviceColor] = useState<'black' | 'silver' | 'yellow' | 'teal' | 'blue' | 'orange'>('teal');
+  const [deviceColor, setDeviceColor] = useState<'black' | 'silver' | 'yellow' | 'teal' | 'blue' | 'orange' | 'pink' | 'lightYellow' | 'purple'>('teal');
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('Not Implemented');
   const [exportProgress, setExportProgress] = useState<ExportProgress | null>(null);
@@ -829,13 +832,13 @@ const EditorPage: React.FC = () => {
                 <div className="space-y-2 pl-2">
                   {/* Battery Level */}
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Battery Level</label>
+                    <label className="text-[11px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Battery Level</label>
                     <div className="flex gap-2">
                       {[0, 1, 2, 3].map((level) => (
                         <button
                           key={level}
                           onClick={() => setBatteryLevel(level)}
-                          className={`flex-1 py-1.5 px-2 text-center text-[10px] font-bold uppercase transition-all border rounded-sm ${batteryLevel === level
+                          className={`flex-1 py-1.5 px-2 text-center text-[11px] font-bold uppercase transition-all border rounded-sm ${batteryLevel === level
                             ? 'bg-[#3C7FD5] border-[#5A9FFF] text-white'
                             : 'bg-[#3A3A3A] border-[#4A4A4A] text-[#AAAAAA] hover:border-[#5A9FFF]'
                             }`}
@@ -856,7 +859,7 @@ const EditorPage: React.FC = () => {
                         onChange={e => setIsCharging(e.target.checked)}
                         className="w-4 h-4 bg-[#3A3A3A] border border-[#4A4A4A] rounded focus:ring-2 focus:ring-[#3C7FD5]"
                       />
-                      <span className="text-[10px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Charging</span>
+                      <span className="text-[11px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Charging</span>
                     </label>
                   </div>
 
@@ -869,14 +872,14 @@ const EditorPage: React.FC = () => {
                         onChange={e => setShowTimeInTitle(e.target.checked)}
                         className="w-4 h-4 bg-[#3A3A3A] border border-[#4A4A4A] rounded focus:ring-2 focus:ring-[#3C7FD5]"
                       />
-                      <span className="text-[10px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Time in Title</span>
+                      <span className="text-[11px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Time in Title</span>
                     </label>
-                    <p className="text-[9px] text-[#777777] ml-6 italic -mt-0.5" style={{ fontFamily: 'var(--font-body)' }}>Show hh:mm in Home status bar</p>
+                    <p className="text-[10px] text-[#777777] ml-6 italic -mt-0.5" style={{ fontFamily: 'var(--font-body)' }}>Show hh:mm in Home status bar</p>
                   </div>
 
                   {/* Play State */}
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Play State</label>
+                    <label className="text-[11px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Play State</label>
                     <select
                       value={playState || ''}
                       onChange={e => {
@@ -898,7 +901,7 @@ const EditorPage: React.FC = () => {
 
                   {/* Headset State */}
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Headset</label>
+                    <label className="text-[11px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Headset</label>
                     <select
                       value={headsetState || ''}
                       onChange={e => setHeadsetState(e.target.value ? (e.target.value as typeof headsetState) : null)}
@@ -913,7 +916,7 @@ const EditorPage: React.FC = () => {
 
                   {/* Bluetooth State */}
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Bluetooth</label>
+                    <label className="text-[11px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Bluetooth</label>
                     <select
                       value={bluetoothState || ''}
                       onChange={e => setBluetoothState(e.target.value ? (e.target.value as typeof bluetoothState) : null)}
@@ -936,7 +939,7 @@ const EditorPage: React.FC = () => {
                         onChange={e => setRingtoneEnabled(e.target.checked)}
                         className="w-4 h-4 bg-[#3A3A3A] border border-[#4A4A4A] rounded focus:ring-2 focus:ring-[#3C7FD5]"
                       />
-                      <span className="text-[10px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Ringtone</span>
+                      <span className="text-[11px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Ringtone</span>
                     </label>
                   </div>
 
@@ -949,7 +952,7 @@ const EditorPage: React.FC = () => {
                         onChange={e => setVibratorEnabled(e.target.checked)}
                         className="w-4 h-4 bg-[#3A3A3A] border border-[#4A4A4A] rounded focus:ring-2 focus:ring-[#3C7FD5]"
                       />
-                      <span className="text-[10px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Vibrator</span>
+                      <span className="text-[11px] uppercase text-[#999999] font-medium tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Vibrator</span>
                     </label>
                   </div>
 
@@ -1148,6 +1151,8 @@ const EditorPage: React.FC = () => {
                   onScroll={handleScroll}
                   onCenterClick={handleCenterClick}
                   onMenuClick={handleMenuClick}
+                  deviceColor={deviceColor}
+                  centerColor={METALLIC_COLORS[deviceColor]?.base}
                   onPrevClick={() => {
                     const prevIdx = (selectedSongIndex - 1 + MOCK_SONGS.length) % MOCK_SONGS.length;
                     setSelectedSongIndex(prevIdx);
@@ -1173,23 +1178,26 @@ const EditorPage: React.FC = () => {
             {/* Device Color Selector - positioned directly below */}
             <div className="flex gap-3 justify-center items-center absolute left-1/2 -translate-x-1/2" style={{ top: 'calc(800px * 0.65 + 160px)' }}>
               {[
-                { name: 'black', label: 'Black', color: '#0A0A0A' },
-                { name: 'silver', label: 'Silver', color: '#C0C0C0' },
-                { name: 'yellow', label: 'Yellow', color: '#FFD700' },
-                { name: 'teal', label: 'Teal', color: '#40E0D0' },
-                { name: 'blue', label: 'Blue', color: '#007BFF' },
-                { name: 'orange', label: 'Orange', color: '#FF6A00' },
+                { name: 'black',       label: 'Black',        color: '#0A0A0A' },
+                { name: 'silver',      label: 'Silver',       color: '#C0C0C0' },
+                { name: 'teal',        label: 'Teal',         color: '#40E0D0' },
+                { name: 'pink',        label: 'Pink',         color: '#E8407A' },
+                { name: 'lightYellow', label: 'Light Yellow', color: '#F5DB1C' },
+                { name: 'blue',        label: 'Blue',         color: '#007BFF' },
+                { name: 'purple',      label: 'Purple',       color: '#7B4FE0' },
+                { name: 'orange',      label: 'Orange',       color: '#FF6A00' },
+                { name: 'yellow',      label: 'Yellow',       color: '#FFD700' },
               ].map((col) => (
                 <button
                   key={col.name}
                   onClick={() => setDeviceColor(col.name as typeof deviceColor)}
-                  className={`w-8 h-8 rounded-full transition-all duration-300 ${deviceColor === col.name
+                  className={`w-7 h-7 rounded-full transition-all duration-300 ${deviceColor === col.name
                     ? 'ring-2 ring-white/80 ring-offset-2 ring-offset-black/50 scale-110'
                     : 'hover:scale-105 opacity-60 hover:opacity-100'
                     }`}
                   style={{
                     backgroundColor: col.color,
-                    border: (col.name === 'silver' || col.name === 'yellow') ? '1px solid rgba(0,0,0,0.15)' : 'none'
+                    border: ['silver', 'yellow', 'lightYellow'].includes(col.name) ? '1px solid rgba(0,0,0,0.2)' : 'none'
                   }}
                   title={col.label}
                 />

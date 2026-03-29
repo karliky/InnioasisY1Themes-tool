@@ -299,7 +299,7 @@ const SearchPalette: React.FC<SearchPaletteProps> = ({
           </div>
 
           <div className="search-results-footer">
-            <span className="text-[9px] text-[#555555]">
+            <span className="text-[10px] text-[#555555]">
               ↑↓ navigate • Enter select • Esc close
             </span>
           </div>

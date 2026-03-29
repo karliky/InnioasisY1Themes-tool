@@ -323,7 +323,7 @@ function PromptBox({ prompt }: { prompt: string }) {
       </pre>
       <button
         onClick={handleCopy}
-        className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase transition-all"
+        className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold uppercase transition-all"
         style={{
           fontFamily: 'var(--font-mono)',
           background: copied ? '#1e3a1e' : '#2A2A2A',
@@ -379,7 +379,7 @@ const AIGeneratorModal: React.FC<AIGeneratorModalProps> = ({ onClose, defaultBla
               <h2 className="text-sm font-bold text-white tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>
                 Generate AI Images
               </h2>
-              <p className="text-[10px] text-[#888888]" style={{ fontFamily: 'var(--font-body)' }}>
+              <p className="text-[11px] text-[#888888]" style={{ fontFamily: 'var(--font-body)' }}>
                 Create icon sets for your theme using AI image generators
               </p>
             </div>
@@ -424,7 +424,7 @@ const AIGeneratorModal: React.FC<AIGeneratorModalProps> = ({ onClose, defaultBla
                   onFocus={(e) => (e.currentTarget.style.borderColor = '#3C7FD5')}
                   onBlur={(e) => (e.currentTarget.style.borderColor = '#3A3A3A')}
                 />
-                <p className="mt-1 text-[9px] text-[#555555]" style={{ fontFamily: 'var(--font-body)' }}>
+                <p className="mt-1 text-[10px] text-[#555555]" style={{ fontFamily: 'var(--font-body)' }}>
                   Sets the overall art style throughout both prompts
                 </p>
               </div>
@@ -439,7 +439,7 @@ const AIGeneratorModal: React.FC<AIGeneratorModalProps> = ({ onClose, defaultBla
                   onFocus={(e) => (e.currentTarget.style.borderColor = '#3C7FD5')}
                   onBlur={(e) => (e.currentTarget.style.borderColor = '#3A3A3A')}
                 />
-                <p className="mt-1 text-[9px] text-[#555555]" style={{ fontFamily: 'var(--font-body)' }}>
+                <p className="mt-1 text-[10px] text-[#555555]" style={{ fontFamily: 'var(--font-body)' }}>
                   e.g. circular, square, rounded square
                 </p>
               </div>
@@ -454,7 +454,7 @@ const AIGeneratorModal: React.FC<AIGeneratorModalProps> = ({ onClose, defaultBla
                   onFocus={(e) => (e.currentTarget.style.borderColor = '#3C7FD5')}
                   onBlur={(e) => (e.currentTarget.style.borderColor = '#3A3A3A')}
                 />
-                <p className="mt-1 text-[9px] text-[#555555]" style={{ fontFamily: 'var(--font-body)' }}>
+                <p className="mt-1 text-[10px] text-[#555555]" style={{ fontFamily: 'var(--font-body)' }}>
                   e.g. Vibrant colors with gold accents
                 </p>
               </div>

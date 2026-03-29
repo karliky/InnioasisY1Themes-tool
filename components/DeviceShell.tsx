@@ -55,6 +55,30 @@ export const METALLIC_COLORS: Record<string, {
         border: '#ff7a10',
         accent: '#ff9a40',
         gradient: 'linear-gradient(135deg, #ff8a30 0%, #ff6a00 25%, #cc4400 50%, #ff6a00 75%, #ff7a10 100%)'
+    },
+    pink: {
+        base: '#e8407a',
+        highlight: '#f46090',
+        shadow: '#b01a56',
+        border: '#ec5080',
+        accent: '#f880a8',
+        gradient: 'linear-gradient(135deg, #f46090 0%, #e8407a 25%, #b01a56 50%, #e8407a 75%, #ec5080 100%)'
+    },
+    lightYellow: {
+        base: '#f5db1c',
+        highlight: '#ffe94c',
+        shadow: '#c4a800',
+        border: '#f0d010',
+        accent: '#fff080',
+        gradient: 'linear-gradient(135deg, #ffe94c 0%, #f5db1c 25%, #c4a800 50%, #f5db1c 75%, #f0d010 100%)'
+    },
+    purple: {
+        base: '#7b4fe0',
+        highlight: '#9b6ff0',
+        shadow: '#4a1fa8',
+        border: '#8b5fe8',
+        accent: '#b890f8',
+        gradient: 'linear-gradient(135deg, #9b6ff0 0%, #7b4fe0 25%, #4a1fa8 50%, #7b4fe0 75%, #8b5fe8 100%)'
     }
 };
 

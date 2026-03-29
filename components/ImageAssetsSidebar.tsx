@@ -28,6 +28,7 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
   const [downloadStatus, setDownloadStatus] = useState<{ status: 'idle' | 'downloading' | 'success' | 'error'; message?: string }>({ status: 'idle' });
   const [imageSearchFilter, setImageSearchFilter] = useState('');
   const [colorSearchFilter, setColorSearchFilter] = useState('');
+  const [fontUploadStatus, setFontUploadStatus] = useState<{ fileName: string; status: 'success' | 'error'; message: string } | null>(null);
   const [selectedImageTags, setSelectedImageTags] = useState<string[]>([]);
 
   // Function to determine tags for an asset based on its config key
@@ -414,8 +415,8 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
               <div className="flex-1">
-                <p className="text-[10px] font-bold text-[#C0C0C0] uppercase tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Read-Only Theme</p>
-                <p className="text-[9px] text-[#999999] mt-1" style={{ fontFamily: 'var(--font-body)' }}>Clone this theme to make it editable.</p>
+                <p className="text-[11px] font-bold text-[#C0C0C0] uppercase tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Read-Only Theme</p>
+                <p className="text-[10px] text-[#999999] mt-1" style={{ fontFamily: 'var(--font-body)' }}>Clone this theme to make it editable.</p>
               </div>
             </div>
           </div>
@@ -426,21 +427,21 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
           <Tooltip content="Show assets">
             <button
               onClick={() => setActiveTab('assets')}
-              className={`px-2 py-1 text-[10px] rounded-sm border ${activeTab === 'assets' ? 'bg-[#3C7FD5] border-[#5A9FFF] text-white' : 'bg-[#3A3A3A] border-[#4A4A4A] text-[#999999]'}`}
+              className={`px-2 py-1 text-xs rounded-sm border ${activeTab === 'assets' ? 'bg-[#3C7FD5] border-[#5A9FFF] text-white' : 'bg-[#3A3A3A] border-[#4A4A4A] text-[#999999]'}`}
               style={{ fontFamily: 'var(--font-mono)' }}
             >Assets</button>
           </Tooltip>
           <Tooltip content="Edit colors">
             <button
               onClick={() => setActiveTab('colors')}
-              className={`px-2 py-1 text-[10px] rounded-sm border ${activeTab === 'colors' ? 'bg-[#3C7FD5] border-[#5A9FFF] text-white' : 'bg-[#3A3A3A] border-[#4A4A4A] text-[#999999]'}`}
+              className={`px-2 py-1 text-xs rounded-sm border ${activeTab === 'colors' ? 'bg-[#3C7FD5] border-[#5A9FFF] text-white' : 'bg-[#3A3A3A] border-[#4A4A4A] text-[#999999]'}`}
               style={{ fontFamily: 'var(--font-mono)' }}
             >Colors</button>
           </Tooltip>
           <Tooltip content="Edit metadata">
             <button
               onClick={() => setActiveTab('metadata')}
-              className={`px-2 py-1 text-[10px] rounded-sm border ${activeTab === 'metadata' ? 'bg-[#3C7FD5] border-[#5A9FFF] text-white' : 'bg-[#3A3A3A] border-[#4A4A4A] text-[#999999]'}`}
+              className={`px-2 py-1 text-xs rounded-sm border ${activeTab === 'metadata' ? 'bg-[#3C7FD5] border-[#5A9FFF] text-white' : 'bg-[#3A3A3A] border-[#4A4A4A] text-[#999999]'}`}
               style={{ fontFamily: 'var(--font-mono)' }}
             >Info</button>
           </Tooltip>
@@ -448,7 +449,7 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
             <Tooltip content="Generate icons with AI">
               <button
                 onClick={onOpenAIGenerator}
-                className="ml-auto flex items-center gap-1.5 px-2 py-1 text-[10px] rounded-sm border transition-all"
+                className="ml-auto flex items-center gap-1.5 px-2 py-1 text-xs rounded-sm border transition-all"
                 style={{
                   fontFamily: 'var(--font-mono)',
                   background: 'linear-gradient(135deg, rgba(109,40,217,0.2), rgba(37,99,235,0.2))',
@@ -521,14 +522,14 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
                         <div className="flex items-center gap-2 flex-wrap min-w-0">
                           <span className="text-xs text-[#CCCCCC] truncate font-medium" style={{ fontFamily: 'var(--font-body)' }}>{entry.label}</span>
                           <span
-                            className="text-[9px] font-bold text-[#999999] bg-[#3A3A3A] border border-[#4A4A4A] px-1.5 py-0.5 truncate whitespace-nowrap overflow-hidden"
+                            className="text-[10px] font-bold text-[#999999] bg-[#3A3A3A] border border-[#4A4A4A] px-1.5 py-0.5 truncate whitespace-nowrap overflow-hidden"
                             style={{ fontFamily: 'var(--font-mono)', maxWidth: '220px' }}
                             title={entry.path}
                           >
                             {entry.path}
                           </span>
                         </div>
-                        <p className="text-[10px] text-[#999999] mt-1.5" style={{ fontFamily: 'var(--font-mono)' }}>{entry.description}</p>
+                        <p className="text-[11px] text-[#999999] mt-1.5" style={{ fontFamily: 'var(--font-mono)' }}>{entry.description}</p>
                         <div className="mt-3 flex items-center gap-3 flex-wrap">
                           <input
                             type="text"
@@ -556,7 +557,7 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
                           />
                         </div>
                         {hasAlpha && (
-                          <p className="text-[10px] text-[#C97D60] mt-1" style={{ fontFamily: 'var(--font-mono)' }}>
+                          <p className="text-[11px] text-[#C97D60] mt-1" style={{ fontFamily: 'var(--font-mono)' }}>
                             Alpha channel detected. Color picker shows RGB values only.
                           </p>
                         )}
@@ -581,7 +582,7 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
               {/* Title */}
               <div id="metadata-title" className="border-2 border-[#4A4540] bg-[#2F2A25] hover:border-[#6B7A47] transition-colors" style={{ boxShadow: '2px 2px 0 0 #1A1612' }}>
                 <div className="p-3 flex flex-col gap-2">
-                  <label className="text-[10px] font-bold text-[#C0C0C0] uppercase tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Theme Title</label>
+                  <label className="text-[11px] font-bold text-[#C0C0C0] uppercase tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Theme Title</label>
                   <input
                     type="text"
                     value={(spec as any)?.theme_info?.title || ''}
@@ -596,14 +597,14 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
                     style={{ fontFamily: 'var(--font-body)' }}
                     title={!isEditable ? 'Clone this theme to edit metadata' : undefined}
                   />
-                  <p className="text-[10px] text-[#999999]" style={{ fontFamily: 'var(--font-mono)' }}>Display name for your theme</p>
+                  <p className="text-[11px] text-[#999999]" style={{ fontFamily: 'var(--font-mono)' }}>Display name for your theme</p>
                 </div>
               </div>
 
               {/* Author */}
               <div id="metadata-author" className="border border-[#4A4A4A] bg-[#3A3A3A] transition-colors">
                 <div className="p-3 flex flex-col gap-2">
-                  <label className="text-[10px] font-bold text-[#C0C0C0] uppercase tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Author</label>
+                  <label className="text-[11px] font-bold text-[#C0C0C0] uppercase tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Author</label>
                   <input
                     type="text"
                     value={(spec as any)?.theme_info?.author || ''}
@@ -618,14 +619,14 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
                     style={{ fontFamily: 'var(--font-body)' }}
                     title={!isEditable ? 'Clone this theme to edit metadata' : undefined}
                   />
-                  <p className="text-[10px] text-[#999999]" style={{ fontFamily: 'var(--font-mono)' }}>Creator of this theme</p>
+                  <p className="text-[11px] text-[#999999]" style={{ fontFamily: 'var(--font-mono)' }}>Creator of this theme</p>
                 </div>
               </div>
 
               {/* Author URL */}
               <div id="metadata-authorUrl" className="border border-[#4A4A4A] bg-[#3A3A3A] transition-colors">
                 <div className="p-3 flex flex-col gap-2">
-                  <label className="text-[10px] font-bold text-[#C0C0C0] uppercase tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Author URL</label>
+                  <label className="text-[11px] font-bold text-[#C0C0C0] uppercase tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Author URL</label>
                   <input
                     type="text"
                     value={(spec as any)?.theme_info?.authorUrl || ''}
@@ -640,14 +641,14 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
                     style={{ fontFamily: 'var(--font-body)' }}
                     title={!isEditable ? 'Clone this theme to edit metadata' : undefined}
                   />
-                  <p className="text-[10px] text-[#999999]" style={{ fontFamily: 'var(--font-mono)' }}>Portfolio, Reddit post, or donation link</p>
+                  <p className="text-[11px] text-[#999999]" style={{ fontFamily: 'var(--font-mono)' }}>Portfolio, Reddit post, or donation link</p>
                 </div>
               </div>
 
               {/* Description */}
               <div id="metadata-description" className="border border-[#4A4A4A] bg-[#3A3A3A] transition-colors">
                 <div className="p-3 flex flex-col gap-2">
-                  <label className="text-[10px] font-bold text-[#C0C0C0] uppercase tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Description</label>
+                  <label className="text-[11px] font-bold text-[#C0C0C0] uppercase tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Description</label>
                   <textarea
                     value={(spec as any)?.theme_info?.description || ''}
                     onChange={(e) => isEditable && onUpdateColor && onUpdateColor('theme_info.description', e.target.value)}
@@ -662,7 +663,7 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
                     style={{ fontFamily: 'var(--font-body)' }}
                     title={!isEditable ? 'Clone this theme to edit metadata' : undefined}
                   />
-                  <p className="text-[10px] text-[#999999]" style={{ fontFamily: 'var(--font-mono)' }}>What makes this theme special?</p>
+                  <p className="text-[11px] text-[#999999]" style={{ fontFamily: 'var(--font-mono)' }}>What makes this theme special?</p>
                 </div>
               </div>
 
@@ -673,23 +674,23 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
                     <svg className="w-5 h-5 text-[#3C7FD5]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
                     </svg>
-                    <label className="text-[10px] font-bold text-[#3C7FD5] uppercase tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Download Theme</label>
+                    <label className="text-[11px] font-bold text-[#3C7FD5] uppercase tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Download Theme</label>
                   </div>
-                  <p className="text-[10px] text-[#999999]" style={{ fontFamily: 'var(--font-mono)' }}>
+                  <p className="text-[11px] text-[#999999]" style={{ fontFamily: 'var(--font-mono)' }}>
                     Export this theme as a .zip file compatible with Y1 device
                   </p>
                   
                   {exportPreview && (
                     <div className="bg-[#2D2D2D] border border-[#4A4A4A] p-2 rounded-sm space-y-1">
-                      <div className="flex items-center justify-between text-[9px]" style={{ fontFamily: 'var(--font-mono)' }}>
+                      <div className="flex items-center justify-between text-[10px]" style={{ fontFamily: 'var(--font-mono)' }}>
                         <span className="text-[#999999]">Files:</span>
                         <span className="text-[#CCCCCC]">{exportPreview.files.length}</span>
                       </div>
-                      <div className="flex items-center justify-between text-[9px]" style={{ fontFamily: 'var(--font-mono)' }}>
+                      <div className="flex items-center justify-between text-[10px]" style={{ fontFamily: 'var(--font-mono)' }}>
                         <span className="text-[#999999]">Assets:</span>
                         <span className="text-[#CCCCCC]">{exportPreview.assetCount}</span>
                       </div>
-                      <div className="flex items-center justify-between text-[9px]" style={{ fontFamily: 'var(--font-mono)' }}>
+                      <div className="flex items-center justify-between text-[10px]" style={{ fontFamily: 'var(--font-mono)' }}>
                         <span className="text-[#999999]">Est. size:</span>
                         <span className="text-[#CCCCCC]">{exportPreview.totalEstimatedSize}</span>
                       </div>
@@ -757,10 +758,36 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
               {fontAssets.map((asset, idx) => {
                 const fileName = getFileName(asset.fileName);
                 const ext = getFileExtension(asset.fileName);
-                
+                const isFontUploading = fontUploadStatus?.fileName === asset.fileName;
+
+                const handleFontReplace = () => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = '.ttf,.otf,.woff,.woff2';
+                  input.onchange = async (e) => {
+                    const file = (e.target as HTMLInputElement).files?.[0];
+                    if (!file || !onUpdateAsset) return;
+                    try {
+                      const dataUrl = await new Promise<string>((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result as string);
+                        reader.onerror = () => reject(new Error('Failed to read font file'));
+                        reader.readAsDataURL(file);
+                      });
+                      await onUpdateAsset(asset.fileName, dataUrl);
+                      setFontUploadStatus({ fileName: asset.fileName, status: 'success', message: 'Font replaced!' });
+                      setTimeout(() => setFontUploadStatus(null), 3000);
+                    } catch (err: any) {
+                      setFontUploadStatus({ fileName: asset.fileName, status: 'error', message: err?.message || 'Failed to replace font' });
+                      setTimeout(() => setFontUploadStatus(null), 5000);
+                    }
+                  };
+                  input.click();
+                };
+
                 return (
-                  <div 
-                    key={idx} 
+                  <div
+                    key={idx}
                     className="border border-[#4A4A4A] p-3 bg-[#3A3A3A] hover:border-[#3C7FD5] transition-colors"
                   >
                     <div className="flex items-center gap-3">
@@ -772,14 +799,39 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
                           <span className="text-xs text-[#CCCCCC] truncate font-medium" title={fileName} style={{ fontFamily: 'var(--font-body)' }}>
                             {fileName}
                           </span>
-                          <span className={`text-[9px] font-bold ${getExtensionColor(ext)} bg-[#2D2D2D] border border-[#4A4A4A] px-1.5 py-0.5`} style={{ fontFamily: 'var(--font-mono)' }}>
+                          <span className={`text-[10px] font-bold ${getExtensionColor(ext)} bg-[#2D2D2D] border border-[#4A4A4A] px-1.5 py-0.5`} style={{ fontFamily: 'var(--font-mono)' }}>
                             {ext}
                           </span>
                         </div>
-                        <p className="text-[10px] text-[#999999] mt-1.5" style={{ fontFamily: 'var(--font-mono)' }}>
+                        <p className="text-[11px] text-[#999999] mt-1.5" style={{ fontFamily: 'var(--font-mono)' }}>
                           {asset.description}
                         </p>
+                        {isFontUploading && (
+                          <p className={`text-[11px] mt-1.5 ${fontUploadStatus?.status === 'success' ? 'text-[#6BBF6B]' : 'text-[#FF6B6B]'}`} style={{ fontFamily: 'var(--font-mono)' }}>
+                            {fontUploadStatus?.message}
+                          </p>
+                        )}
                       </div>
+                      {isEditable ? (
+                        <Tooltip content="Replace font file">
+                          <button
+                            onClick={handleFontReplace}
+                            className="flex-shrink-0 p-1.5 border border-[#4A4A4A] bg-[#2D2D2D] hover:border-[#3C7FD5] hover:bg-[#3A3A3A] transition-colors"
+                          >
+                            <svg className="w-3.5 h-3.5 text-[#999999] hover:text-[#3C7FD5]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                            </svg>
+                          </button>
+                        </Tooltip>
+                      ) : (
+                        <Tooltip content="Clone this theme to replace fonts">
+                          <div className="flex-shrink-0 p-1.5 border border-[#4A4A4A] bg-[#2D2D2D] opacity-40 cursor-not-allowed">
+                            <svg className="w-3.5 h-3.5 text-[#999999]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                            </svg>
+                          </div>
+                        </Tooltip>
+                      )}
                     </div>
                   </div>
                 );
@@ -886,7 +938,7 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
                           <span className="text-xs text-[#CCCCCC] truncate font-medium" title={fileName} style={{ fontFamily: 'var(--font-body)' }}>
                             {fileName}
                           </span>
-                          <span className={`text-[9px] font-bold ${getExtensionColor(ext)} bg-[#2D2D2D] border border-[#4A4A4A] px-1.5 py-0.5`} style={{ fontFamily: 'var(--font-mono)' }}>
+                          <span className={`text-[10px] font-bold ${getExtensionColor(ext)} bg-[#2D2D2D] border border-[#4A4A4A] px-1.5 py-0.5`} style={{ fontFamily: 'var(--font-mono)' }}>
                             {ext}
                           </span>
                           {expectedSize && (

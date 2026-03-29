@@ -257,13 +257,17 @@ const ClickWheel: React.FC<ClickWheelProps> = ({
           }}
         >
           <span style={iconStyle('menu')}>
-            <svg width="32" height="22" viewBox="0 0 32 22" fill="none">
-              <path d="M10 10V7L3 13l7 6v-3h5a6 6 0 0 0 0-12H10"
-                stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/>
-              <rect x="20" y="7"  width="4" height="4" rx="0.8" fill="currentColor"/>
-              <rect x="26" y="7"  width="4" height="4" rx="0.8" fill="currentColor"/>
-              <rect x="20" y="13" width="4" height="4" rx="0.8" fill="currentColor"/>
-              <rect x="26" y="13" width="4" height="4" rx="0.8" fill="currentColor"/>
+            <svg width="30" height="22" viewBox="0 0 30 22" fill="none">
+              {/* Back / Menu arrow */}
+              <path d="M8 9.5V6.5L2 11l6 5.5v-3h3.5a4.5 4.5 0 0 0 0-9H8"
+                stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              {/* Separator */}
+              <line x1="14.5" y1="3.5" x2="14.5" y2="18.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.45"/>
+              {/* 2×2 grid */}
+              <rect x="17"   y="6.5"  width="4.5" height="4.5" rx="0.9" fill="currentColor"/>
+              <rect x="23"   y="6.5"  width="4.5" height="4.5" rx="0.9" fill="currentColor"/>
+              <rect x="17"   y="13"   width="4.5" height="4.5" rx="0.9" fill="currentColor"/>
+              <rect x="23"   y="13"   width="4.5" height="4.5" rx="0.9" fill="currentColor"/>
             </svg>
           </span>
         </button>

@@ -2,9 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import exportImage from '../res/tutorial/export.png?url';
 import navigateVideo from '../res/tutorial/navigate.mov?url';
 import copypasteVideo from '../res/tutorial/copypaste.mov?url';
+import changelogRaw from '../CHANGELOG.md?raw';
+import { parseChangelog } from '../src/parseChangelog';
+
+const CHANGELOG = parseChangelog(changelogRaw);
 
 interface TutorialStep {
-  type: 'image' | 'video' | 'text';
+  type: 'image' | 'video' | 'text' | 'changelog';
   content: string; // path to image/video or text content
   title?: string;
   description?: string;
@@ -44,6 +48,12 @@ const TutorialModal: React.FC<TutorialModalProps> = ({ visible, onClose, onSkip 
       content: 'Visit the Gallery',
       title: 'Discover Community Themes',
       description: 'Explore the <strong>/gallery</strong> to find more <strong>community-driven themes</strong> and get inspired by what others have created.'
+    },
+    {
+      type: 'changelog',
+      content: '',
+      title: "What's New",
+      description: 'Here\'s what changed in the latest releases.'
     }
   ];
 
@@ -187,6 +197,33 @@ const TutorialModal: React.FC<TutorialModalProps> = ({ visible, onClose, onSkip 
                 muted
                 playsInline
               />
+            )}
+            {currentStepData.type === 'changelog' && (
+              <div className="w-full p-4 overflow-y-auto max-h-[360px] space-y-5">
+                {CHANGELOG.slice(0, 3).map((entry) => (
+                  <div key={entry.version}>
+                    <div className="flex items-baseline gap-3 mb-2">
+                      <span className="text-sm font-bold text-[#3C7FD5]" style={{ fontFamily: 'var(--font-mono)' }}>v{entry.version}</span>
+                      <span className="text-[11px] text-[#666666]" style={{ fontFamily: 'var(--font-mono)' }}>{entry.date}</span>
+                    </div>
+                    <ul className="space-y-1.5">
+                      {entry.changes.map((change, i) => (
+                        <li key={i} className="flex items-start gap-2 text-xs text-[#CCCCCC]" style={{ fontFamily: 'var(--font-body)' }}>
+                          <span className={`mt-0.5 shrink-0 text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-sm ${
+                            change.type === 'feat'    ? 'bg-[#1e3a5f] text-[#5ba0e8]' :
+                            change.type === 'fix'     ? 'bg-[#3a1e1e] text-[#e87a7a]' :
+                            change.type === 'improve' ? 'bg-[#1e3a2a] text-[#5ae8a0]' :
+                                                        'bg-[#3a2a1e] text-[#e8b05a]'
+                          }`}>
+                            {change.type === 'improve' ? 'impr' : change.type}
+                          </span>
+                          <span>{change.text}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
             )}
             {currentStepData.type === 'text' && (
               <div className="text-center p-6">

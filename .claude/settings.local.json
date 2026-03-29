@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"import\\(''./src/changelog.ts''\\).then\\(m => console.log\\(''entries:'', m.CHANGELOG.length\\)\\).catch\\(e => console.log\\(''node check skipped \\(TS file\\):'', e.message.slice\\(0,60\\)\\)\\)\")"
+    ]
+  }
+}

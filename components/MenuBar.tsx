@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { LoadedTheme, ThemeAssetInfo } from '../types';
 import SearchPalette from './SearchPalette';
 import '../styles/MenuBar.css';
+import changelogRaw from '../CHANGELOG.md?raw';
+import { parseChangelog } from '../src/parseChangelog';
+
+const CHANGELOG = parseChangelog(changelogRaw);
 
 interface MenuBarProps {
   activeTheme: LoadedTheme | null;
@@ -59,6 +63,7 @@ const MenuBar: React.FC<MenuBarProps> = ({
   const [activeMenu, setActiveMenu] = useState<MenuType | null>(null);
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [showChangelogModal, setShowChangelogModal] = useState(false);
   const menuRefs = useRef<Record<MenuType, HTMLDivElement | null>>({
     file: null,
     edit: null,
@@ -217,6 +222,9 @@ const MenuBar: React.FC<MenuBarProps> = ({
               </a>
               <button className="menu-option" onClick={() => { setShowFeedbackModal(true); closeMenu(); }}>
                 Send Feedback
+              </button>
+              <button className="menu-option" onClick={() => { setShowChangelogModal(true); closeMenu(); }}>
+                Changelog
               </button>
               <button className="menu-option" onClick={() => { setShowHelpModal(true); closeMenu(); }}>
                 About Themes Tool
@@ -396,6 +404,50 @@ const MenuBar: React.FC<MenuBarProps> = ({
               <p className="text-[11px] text-[#888888]" style={{ fontFamily: 'var(--font-mono)' }}>
                 💡 Found a bug or have a feature request? <a href="https://github.com/karliky/InnioasisY1Themes-tool/issues" target="_blank" rel="noopener noreferrer" className="text-[#3C7FD5] underline">Open an issue on GitHub!</a>
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Changelog Modal */}
+      {showChangelogModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setShowChangelogModal(false)}>
+          <div className="bg-[#2D2D2D] border border-[#3C7FD5] rounded-sm max-w-2xl w-full mx-4 select-text flex flex-col" style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.8)', maxHeight: '80vh' }} onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+            <div className="flex items-start justify-between p-6 pb-4 border-b border-[#3A3A3A]">
+              <div>
+                <h3 className="text-xl font-bold text-[#FFFFFF]" style={{ fontFamily: 'var(--font-body)' }}>Changelog</h3>
+                <p className="text-[11px] text-[#888888] mt-1" style={{ fontFamily: 'var(--font-mono)' }}>Theme Maker Y1 — release history</p>
+              </div>
+              <button onClick={() => setShowChangelogModal(false)} className="p-1 hover:bg-[#3A3A3A] transition-colors text-[#CCCCCC] hover:text-[#FFFFFF] rounded-sm">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="overflow-y-auto flex-1 p-6 pt-4 space-y-6">
+              {CHANGELOG.map((entry) => (
+                <div key={entry.version}>
+                  <div className="flex items-baseline gap-3 mb-2">
+                    <span className="text-sm font-bold text-[#3C7FD5]" style={{ fontFamily: 'var(--font-mono)' }}>v{entry.version}</span>
+                    <span className="text-[11px] text-[#666666]" style={{ fontFamily: 'var(--font-mono)' }}>{entry.date}</span>
+                  </div>
+                  <ul className="space-y-1.5">
+                    {entry.changes.map((change, i) => (
+                      <li key={i} className="flex items-start gap-2 text-xs text-[#CCCCCC]" style={{ fontFamily: 'var(--font-body)' }}>
+                        <span className={`mt-0.5 shrink-0 text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-sm ${
+                          change.type === 'feat'    ? 'bg-[#1e3a5f] text-[#5ba0e8]' :
+                          change.type === 'fix'     ? 'bg-[#3a1e1e] text-[#e87a7a]' :
+                          change.type === 'improve' ? 'bg-[#1e3a2a] text-[#5ae8a0]' :
+                                                      'bg-[#3a2a1e] text-[#e8b05a]'
+                        }`}>
+                          {change.type === 'improve' ? 'impr' : change.type}
+                        </span>
+                        <span>{change.text}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
           </div>
         </div>

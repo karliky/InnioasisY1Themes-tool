@@ -9,7 +9,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@google/genai": "^1.35.0",
     "browser-image-compression": "^2.0.2",
     "jszip": "^3.10.1",
     "openai": "^6.16.0",

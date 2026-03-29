@@ -269,18 +269,18 @@ const ClickWheel: React.FC<ClickWheelProps> = ({
           }}
         >
           <span style={iconStyle('menu')}>
-            <svg width="26" height="22" viewBox="0 0 26 22" fill="none" aria-hidden="true">
+            <svg width="26" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">
               <path
-                d="M9.6 7.1 5.4 11.3l4.2 4.2"
+                d="M11 7l-6 6 6 6"
                 stroke="currentColor"
-                strokeWidth="2.1"
+                strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
               <path
-                d="M5.8 11.3h10.8a3.9 3.9 0 1 1 0 7.8h-2.3"
+                d="M5 13h16a8 8 0 0 1 8 8v1a8 8 0 0 1 -8 8h-14"
                 stroke="currentColor"
-                strokeWidth="2.1"
+                strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />

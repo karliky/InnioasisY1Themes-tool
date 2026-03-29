@@ -153,6 +153,18 @@ const ClickWheel: React.FC<ClickWheelProps> = ({
 
   // Guard: fire handler only if pointer didn't travel far (= click, not drag)
   const handleBtnClick = (handler: () => void) => (e: React.MouseEvent) => {
+    if (wheelRef.current) {
+      const rect = wheelRef.current.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const centerRadius = 56; // Matches the 112px center button diameter
+      const dx = e.clientX - centerX;
+      const dy = e.clientY - centerY;
+      if (Math.sqrt(dx * dx + dy * dy) <= centerRadius) {
+        return;
+      }
+    }
+
     if (!wasScrolling.current && pointerStartPos.current) {
       const d = Math.sqrt(
         Math.pow(e.clientX - pointerStartPos.current.x, 2) +
@@ -257,10 +269,21 @@ const ClickWheel: React.FC<ClickWheelProps> = ({
           }}
         >
           <span style={iconStyle('menu')}>
-            <svg width="32" height="22" viewBox="0 0 32 22" fill="none">
-              <path d="M10 10V7L3 13l7 6v-3h5a6 6 0 0 0 0-12H10"
-                transform="translate(4.5 0)"
-                stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/>
+            <svg width="26" height="22" viewBox="0 0 26 22" fill="none" aria-hidden="true">
+              <path
+                d="M9.6 7.1 5.4 11.3l4.2 4.2"
+                stroke="currentColor"
+                strokeWidth="2.1"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M5.8 11.3h10.8a3.9 3.9 0 1 1 0 7.8h-2.3"
+                stroke="currentColor"
+                strokeWidth="2.1"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </span>
         </button>
@@ -362,7 +385,7 @@ const ClickWheel: React.FC<ClickWheelProps> = ({
             background: centerBgFull,
             border: centerBorder,
             boxShadow: centerShadow,
-            zIndex: 10,
+            zIndex: 30,
             cursor: 'pointer',
           }}
         />

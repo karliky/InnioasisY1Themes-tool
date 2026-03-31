@@ -232,6 +232,85 @@ const EditorPage: React.FC = () => {
 
   }, [activeTheme]);
 
+  // Handle adding missing images (from Default blank) to the current theme
+  const handleAddMissingAssets = useCallback(async (items: Array<{ configKey: string; fileName: string; url: string; description?: string }>) => {
+    if (!activeTheme?.isEditable) return;
+
+    // Convert a URL to a persistable data URL
+    const toDataUrl = async (url: string): Promise<string> => {
+      if (url.startsWith('data:')) return url;
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        return await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(typeof reader.result === 'string' ? reader.result : url);
+          reader.onerror = () => reject(new Error('Failed to convert URL to data URL'));
+          reader.readAsDataURL(blob);
+        });
+      } catch {
+        return url;
+      }
+    };
+
+    // Build updated spec with new config keys pointing to filenames
+    const updatedSpec: any = JSON.parse(JSON.stringify(activeTheme.spec));
+    for (const item of items) {
+      const parts = item.configKey.split('.');
+      let cursor: any = updatedSpec;
+      for (let i = 0; i < parts.length - 1; i++) {
+        const part = parts[i];
+        if (typeof cursor[part] !== 'object' || cursor[part] === null) cursor[part] = {};
+        cursor = cursor[part];
+      }
+      const lastPart = parts[parts.length - 1];
+      const arrayMatch = lastPart.match(/^(.+)\[(\d+)\]$/);
+      if (arrayMatch) {
+        const [, key, indexStr] = arrayMatch;
+        const index = parseInt(indexStr);
+        if (!Array.isArray(cursor[key])) cursor[key] = [];
+        cursor[key][index] = item.fileName;
+      } else {
+        cursor[lastPart] = item.fileName;
+      }
+    }
+
+    // Persist spec
+    await updateClonedThemeSpec(activeTheme.id, updatedSpec);
+
+    // Convert and persist each asset
+    const persistedItems = await Promise.all(
+      items.map(async item => ({ ...item, url: await toDataUrl(item.url) }))
+    );
+    for (const item of persistedItems) {
+      await updateClonedThemeAsset(activeTheme.id, item.fileName, item.url);
+    }
+
+    // Update local state
+    const newAssets: ThemeAssetInfo[] = persistedItems.map(item => ({
+      fileName: item.fileName,
+      url: item.url,
+      configKey: item.configKey,
+      description: item.description || item.configKey,
+    }));
+
+    const updatedLoadedAssets = [...activeTheme.loadedAssets, ...newAssets]
+      .sort((a, b) => (a.configKey || '').localeCompare(b.configKey || ''));
+
+    const updatedTheme: LoadedTheme = {
+      ...activeTheme,
+      spec: updatedSpec,
+      loadedAssets: updatedLoadedAssets,
+      assetUrlForFile: (file: string) => {
+        const asset = updatedLoadedAssets.find(a => a.fileName === file || a.fileName.endsWith(`/${file}`));
+        return asset?.url || activeTheme.assetUrlForFile?.(file);
+      }
+    };
+
+    setActiveTheme(updatedTheme);
+    setAvailableThemes(prev => prev.map(t => t.id === activeTheme.id ? updatedTheme : t));
+  }, [activeTheme]);
+
   // Handle updating color/metadata in theme config
   const handleUpdateColor = useCallback((configPath: string, newColor: string) => {
     if (!activeTheme) return;
@@ -1219,6 +1298,7 @@ const EditorPage: React.FC = () => {
             isEditable={activeTheme.isEditable}
             currentTheme={activeTheme}
             onOpenAIGenerator={() => setShowAIGeneratorModal(true)}
+            onAddMissingAssets={handleAddMissingAssets}
           />
         )}
       </div>

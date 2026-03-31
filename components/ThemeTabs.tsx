@@ -72,6 +72,12 @@ const ThemeTabs: React.FC<ThemeTabsProps> = ({
         return (
           <div
             key={theme.id}
+            onClick={() => {
+              if (!isEditing) onSelectTheme(theme);
+            }}
+            onDoubleClick={() => {
+              if (!isEditing) handleDoubleClick(theme);
+            }}
             className={`flex items-center gap-2 px-4 py-2 min-w-[140px] max-w-[220px] cursor-pointer transition-all relative ${
               isActive
                 ? 'bg-[#1E1E1E] text-white'
@@ -94,14 +100,12 @@ const ThemeTabs: React.FC<ThemeTabsProps> = ({
                 style={{ minWidth: '80px' }}
               />
             ) : (
-              <button
-                onClick={() => onSelectTheme(theme)}
-                onDoubleClick={() => handleDoubleClick(theme)}
+              <div
                 className="flex-1 text-xs text-left truncate font-medium hover:opacity-80 transition-opacity"
                 title={displayName}
               >
                 {displayName}
-              </button>
+              </div>
             )}
             <Tooltip content="Close theme">
               <button

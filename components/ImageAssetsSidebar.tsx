@@ -18,7 +18,18 @@ interface ImageAssetsSidebarProps {
   onOpenAIGenerator?: () => void;
 }
 
-const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeName, spec, onClose, onUpdateAsset, onUpdateColor, availableThemes = [], isEditable = true, currentTheme, onOpenAIGenerator }) => {
+interface MissingAssetItem {
+  configKey: string;
+  fileName: string;
+  url: string;
+  description?: string;
+}
+
+interface ImageAssetsSidebarPropsExtended extends ImageAssetsSidebarProps {
+  onAddMissingAssets?: (items: MissingAssetItem[]) => Promise<void>;
+}
+
+const ImageAssetsSidebar: React.FC<ImageAssetsSidebarPropsExtended> = ({ assets, themeName, spec, onClose, onUpdateAsset, onUpdateColor, availableThemes = [], isEditable = true, currentTheme, onOpenAIGenerator, onAddMissingAssets }) => {
   const [expandedAsset, setExpandedAsset] = useState<string | null>(null);
   const [pasteStatus, setPasteStatus] = useState<{ fileName: string; status: 'success' | 'error'; message: string } | null>(null);
   const [copyStatus, setCopyStatus] = useState<{ fileName: string; status: 'success' | 'error'; message: string } | null>(null);
@@ -30,6 +41,9 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
   const [colorSearchFilter, setColorSearchFilter] = useState('');
   const [fontUploadStatus, setFontUploadStatus] = useState<{ fileName: string; status: 'success' | 'error'; message: string } | null>(null);
   const [selectedImageTags, setSelectedImageTags] = useState<string[]>([]);
+  const [missingPanelOpen, setMissingPanelOpen] = useState(false);
+  const [selectedMissingKeys, setSelectedMissingKeys] = useState<Set<string>>(new Set());
+  const [addingMissingStatus, setAddingMissingStatus] = useState<'idle' | 'adding' | 'success' | 'error'>('idle');
 
   // Function to determine tags for an asset based on its config key
   const getImageTags = (configKey: string): string[] => {
@@ -367,6 +381,37 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
     });
   }, [colorEntries, colorSearchFilter]);
 
+  // Compute missing assets compared to Default blank theme
+  const missingAssets = useMemo((): MissingAssetItem[] => {
+    if (!isEditable) return [];
+    const defaultBlank = availableThemes.find(t => t.id === 'Default blank');
+    if (!defaultBlank) return [];
+    const currentConfigKeys = new Set(assets.map(a => a.configKey).filter(Boolean));
+    return defaultBlank.loadedAssets
+      .filter(a => a.configKey && /\.(png|jpg|jpeg|svg)$/i.test(a.fileName) && !currentConfigKeys.has(a.configKey))
+      .map(a => ({
+        configKey: a.configKey!,
+        fileName: a.fileName,
+        url: a.url,
+        description: a.description || a.configKey!,
+      }));
+  }, [assets, availableThemes, isEditable]);
+
+  const handleAddSelected = async () => {
+    if (!onAddMissingAssets || selectedMissingKeys.size === 0) return;
+    setAddingMissingStatus('adding');
+    try {
+      const items = missingAssets.filter(a => selectedMissingKeys.has(a.configKey));
+      await onAddMissingAssets(items);
+      setSelectedMissingKeys(new Set());
+      setAddingMissingStatus('success');
+      setTimeout(() => setAddingMissingStatus('idle'), 3000);
+    } catch {
+      setAddingMissingStatus('error');
+      setTimeout(() => setAddingMissingStatus('idle'), 5000);
+    }
+  };
+
   // Handle theme download
   const handleDownloadTheme = async () => {
     if (!currentTheme) {
@@ -397,33 +442,49 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
   return (
     <div className="w-80 border-l border-[#3A3A3A] bg-[#2D2D2D] flex flex-col z-30 overflow-hidden relative editorial-sidebar" style={{ boxShadow: '-2px 0 8px rgba(0,0,0,0.5)' }}>
       <div className="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar relative z-10">
-        {/* Section Title */}
-        <section className="space-y-4 editorial-section">
+        {/* Header Group: Title + Notice + Tabs */}
+        <div className="space-y-2">
+          {/* Section Title */}
           <h3 className="text-[11px] font-bold text-[#C0C0C0] uppercase tracking-[0.15em] border-b border-[#3C7FD5] pb-2 flex items-center gap-2" style={{ fontFamily: 'var(--font-mono)' }}>
             <svg className="w-4 h-4 text-[#3C7FD5] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             <span className="truncate" title={themeName}>{themeName}</span>
           </h3>
-        </section>
 
-        {/* Read-Only Warning - Shown at top of content */}
-        {!isEditable && (
-          <div className="bg-[#3A3A3A] border border-[#4A4A4A] p-2.5 rounded-sm">
-            <div className="flex items-start gap-2">
-              <svg className="w-4 h-4 text-[#999999] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <div className="flex-1">
-                <p className="text-[11px] font-bold text-[#C0C0C0] uppercase tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Read-Only Theme</p>
-                <p className="text-[10px] text-[#999999] mt-1" style={{ fontFamily: 'var(--font-body)' }}>Clone this theme to make it editable.</p>
+          {/* Read-Only Warning - Shown at top of content */}
+          {!isEditable && (
+            <div className="bg-[#3A3A3A] border border-[#4A4A4A] p-2.5 rounded-sm">
+              <div className="flex items-start gap-2">
+                <svg className="w-4 h-4 text-[#999999] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <div className="flex-1">
+                  <p className="text-[11px] font-bold text-[#C0C0C0] uppercase tracking-wide" style={{ fontFamily: 'var(--font-mono)' }}>Read-Only Theme</p>
+                  <p className="text-[10px] text-[#999999] mt-1" style={{ fontFamily: 'var(--font-body)' }}>Clone this theme to make it editable.</p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-        
-        {/* Tab Navigation */}
-        <div className="flex gap-1">
+          )}
+
+          {/* Autosave Notice - Shown when theme is editable */}
+          {isEditable && (
+            <div
+              className="flex items-start gap-2 rounded-sm border border-[#3C7FD5]/40 bg-[#1F2B3A] px-2 py-1.5"
+              role="note"
+              aria-label="Autosave notice"
+            >
+              <svg className="w-4 h-4 text-[#7FB1FF] mt-[1px] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M10.29 3.86l-7.63 13.2A1 1 0 003.53 18h16.94a1 1 0 00.87-1.49l-7.63-13.2a1 1 0 00-1.74 0z" />
+              </svg>
+              <p className="text-xs text-[#BFD7FF] leading-relaxed" style={{ fontFamily: 'var(--font-body)' }}>
+                Changes are saved automatically in your browser. No need to press any key to save.
+              </p>
+            </div>
+          )}
+          
+          {/* Tab Navigation */}
+          <div className="flex gap-1">
           <Tooltip content="Show assets">
             <button
               onClick={() => setActiveTab('assets')}
@@ -475,6 +536,7 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
               </button>
             </Tooltip>
           )}
+        </div>
         </div>
 
         {activeTab === 'colors' && (
@@ -1062,6 +1124,114 @@ const ImageAssetsSidebar: React.FC<ImageAssetsSidebarProps> = ({ assets, themeNa
                 );
               })}
             </div>
+          </section>
+        )}
+
+        {/* Missing Images Panel */}
+        {activeTab === 'assets' && isEditable && missingAssets.length > 0 && (
+          <section className="space-y-3 editorial-section">
+            <button
+              onClick={() => setMissingPanelOpen(o => !o)}
+              className="w-full text-left flex items-center gap-2 text-[11px] font-bold text-[#C0C0C0] uppercase tracking-[0.15em] border-b border-[#C97D60] pb-2"
+              style={{ fontFamily: 'var(--font-mono)' }}
+            >
+              <svg className="w-4 h-4 text-[#C97D60] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              <span className="flex-1">Add Missing Images</span>
+              <span className="text-[10px] font-bold text-[#C97D60] bg-[#3A2A20] border border-[#C97D60]/40 px-1.5 py-0.5 rounded-sm">
+                {missingAssets.length}
+              </span>
+              <svg
+                className={`w-4 h-4 text-[#999999] transition-transform ${missingPanelOpen ? 'rotate-180' : ''}`}
+                fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {missingPanelOpen && (
+              <div className="pl-2 space-y-3">
+                <p className="text-[10px] text-[#999999]" style={{ fontFamily: 'var(--font-mono)' }}>
+                  These slots exist in Default blank but are missing from this theme. Select which ones to add (images will be copied from Default blank).
+                </p>
+
+                {/* Select All / Clear */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSelectedMissingKeys(new Set(missingAssets.map(a => a.configKey)))}
+                    className="px-2 py-1 text-[10px] border border-[#4A4A4A] bg-[#3A3A3A] text-[#999999] hover:border-[#3C7FD5] hover:text-[#CCCCCC] transition-colors rounded-sm"
+                    style={{ fontFamily: 'var(--font-mono)' }}
+                  >
+                    Select All
+                  </button>
+                  <button
+                    onClick={() => setSelectedMissingKeys(new Set())}
+                    className="px-2 py-1 text-[10px] border border-[#4A4A4A] bg-[#3A3A3A] text-[#999999] hover:border-[#3C7FD5] hover:text-[#CCCCCC] transition-colors rounded-sm"
+                    style={{ fontFamily: 'var(--font-mono)' }}
+                  >
+                    Clear
+                  </button>
+                </div>
+
+                {/* Missing asset list */}
+                <div className="space-y-1.5 max-h-72 overflow-y-auto no-scrollbar">
+                  {missingAssets.map(asset => {
+                    const isChecked = selectedMissingKeys.has(asset.configKey);
+                    return (
+                      <label
+                        key={asset.configKey}
+                        className={`flex items-center gap-2.5 p-2 border cursor-pointer transition-colors ${isChecked ? 'border-[#C97D60]/60 bg-[#3A2A20]' : 'border-[#4A4A4A] bg-[#3A3A3A] hover:border-[#C97D60]/40'}`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => {
+                            setSelectedMissingKeys(prev => {
+                              const next = new Set(prev);
+                              if (next.has(asset.configKey)) next.delete(asset.configKey);
+                              else next.add(asset.configKey);
+                              return next;
+                            });
+                          }}
+                          className="accent-[#C97D60] flex-shrink-0"
+                        />
+                        <div className="w-8 h-8 flex-shrink-0 bg-[#2D2D2D] border border-[#4A4A4A] flex items-center justify-center overflow-hidden">
+                          <img src={asset.url} alt="" className="w-full h-full object-contain" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] text-[#CCCCCC] truncate" style={{ fontFamily: 'var(--font-body)' }}>{asset.description || asset.configKey}</p>
+                          <p className="text-[9px] text-[#666666] truncate" style={{ fontFamily: 'var(--font-mono)' }}>{asset.configKey}</p>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+
+                {/* Add Selected button */}
+                <button
+                  onClick={handleAddSelected}
+                  disabled={selectedMissingKeys.size === 0 || addingMissingStatus === 'adding'}
+                  className={`w-full px-4 py-2 text-xs font-bold uppercase tracking-wide border transition-all ${
+                    selectedMissingKeys.size === 0 || addingMissingStatus === 'adding'
+                      ? 'bg-[#3A3A3A] border-[#4A4A4A] text-[#666666] cursor-not-allowed'
+                      : 'bg-[#C97D60] border-[#D4956A] text-white hover:bg-[#D48A70]'
+                  }`}
+                  style={{ fontFamily: 'var(--font-mono)' }}
+                >
+                  {addingMissingStatus === 'adding'
+                    ? 'Adding...'
+                    : `Add Selected (${selectedMissingKeys.size})`}
+                </button>
+
+                {addingMissingStatus === 'success' && (
+                  <p className="text-[10px] text-[#6BBF6B]" style={{ fontFamily: 'var(--font-mono)' }}>Images added successfully!</p>
+                )}
+                {addingMissingStatus === 'error' && (
+                  <p className="text-[10px] text-[#FF6B6B]" style={{ fontFamily: 'var(--font-mono)' }}>Failed to add images.</p>
+                )}
+              </div>
+            )}
           </section>
         )}
 
